@@ -1,0 +1,61 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: laravel-app
+    env_file:
+      - .env
+    volumes:
+      - .:/var/www
+      #- ~/.claude:/home/laravel/.claude
+    ports:
+      - "8000:8000"   # Laravel
+      - "5173:5173"   # Vite
+    networks:
+      - laravel-network
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    tty: true  # Enables an interactive terminal
+    stdin_open: true  # Keeps standard input open for 'docker exec'
+    shm_size: '2gb' # Add shared memory for browser testing
+    entrypoint: /usr/local/bin/docker-entrypoint.sh
+    command: bash
+
+  db:
+    image: mariadb:10.5
+    container_name: laravel-db
+    volumes:
+      - ./db_data:/var/lib/mysql
+    environment:
+      - MYSQL_DATABASE=${DB_DATABASE}
+      - MYSQL_USER=${DB_USERNAME}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
+    networks:
+      - laravel-network
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  redis:
+    image: redis:7-alpine
+    container_name: laravel-redis
+    networks:
+      - laravel-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+
+networks:
+  laravel-network:
+    driver: bridge

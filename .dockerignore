@@ -1,0 +1,65 @@
+# Include any files or directories that you don't want to be copied to your
+# container here (e.g., local build artifacts, temporary files, etc.).
+#
+# For more help, visit the .dockerignore file reference guide at
+# https://docs.docker.com/go/build-context-dockerignore/
+
+# Dependencies
+node_modules
+vendor
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+*~
+
+# OS
+**/.DS_Store
+**/Thumbs.db
+
+# Laravel
+storage/logs/*
+!storage/logs/.gitkeep
+storage/framework/cache/*
+!storage/framework/cache/.gitkeep
+storage/framework/sessions/*
+!storage/framework/sessions/.gitkeep
+storage/framework/views/*
+!storage/framework/views/.gitkeep
+storage/app/public/*
+!storage/app/public/.gitkeep
+bootstrap/cache/*
+!bootstrap/cache/.gitkeep
+
+# Testing
+coverage
+.phpunit.result.cache
+test-results
+
+# Build
+public/hot
+public/storage
+public/build
+
+# Documentation
+*.md
+!README.md
+!docs/planning/*.md
+!docs/progress/*.md
+
+# Docker
+.dockerignore
+docker-compose.yml
+Dockerfile
