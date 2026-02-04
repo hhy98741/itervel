@@ -2,48 +2,54 @@
 
 ## Getting Started
 
-### 1. Start Laravel Boost
+### 1. Intall Dependencies
 
-Before starting development, run the Laravel Boost MCP server so Claude can access project context:
-
-```bash
-make ai  # php artisan boost:install
-```
-
-### 2. Set Up Environment
-
-Copy the environment file and configure your settings:
+Install composer and npm dependencies:
 
 ```bash
-cp .env.example .env
+composer install
+npm install
 ```
 
-### 3. Start Docker
+### 2. Start Docker
 
 Start the Docker containers:
 
 ```bash
-make build  # docker compose build
-make up  # docker compose up -d
+docker compose build  # Build the Docker image
+docker compose up -d  # Spin up the Docker containers
+docker compose exec app bash  # Enter the Docker app container shell
 ```
 
-### 4. Initial Setup
+### 3. Initial Setup
 
 Run the setup command inside Docker:
 
 ```bash
-make shell  # docker compose exec app bash
-make setup  # composer setup
+cp .env.example .env  # Copy the environment file and configure your settings
+php artisan key:generate  # Generates the app key
+php artisan migrate --force  # Runs migrations
 ```
 
-This installs dependencies, generates the app key, and runs migrations.
+### 4. Install Laravel Boost
+
+Before starting development, run the Laravel Boost MCP server so Claude can access project context:
+
+```bash
+php artisan boost:install
+```
 
 ### 5. Development with Claude
 
-Enter the Docker container shell for development:
+Enter the Docker container shell for development or to run the servers:
 
 ```bash
-make shell  # docker compose exec app bash
+docker compose start  # Start all the Docker containers
+docker compose exec app bash  # Enter the Docker app container shell
+composer run dev  # Starts the Laravel and Vite servers
+
+claude  # Start Claude Code CLI
+docker compose stop  # Stop all the Docker containers
 ```
 
 From inside the container, you can use Claude Code to assist with development. All Laravel commands (artisan, composer, npm) should be run inside the container.

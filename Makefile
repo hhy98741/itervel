@@ -8,11 +8,17 @@ help: ## Show this help
 build: ## Build containers
 	docker compose build
 
-up: ## Start all containers
+up: ## Create and start all containers
 	docker compose up -d
 
-down: ## Stop all containers
+down: ## Stop and remove all containers
 	docker compose down
+
+start: ## Start all containers
+	docker compose start
+
+stop: ## Stop all containers
+	docker compose stop
 
 shell: ## Access app container shell
 	docker compose exec app bash

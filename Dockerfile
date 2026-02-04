@@ -42,9 +42,6 @@ RUN curl -fsSL https://deb.nodesource.com/setup_24.x | bash - \
     && apt-get install -y nodejs \
     && apt-get clean
 
-# Install Claude Code globally
-RUN npm install -g @anthropic-ai/claude-code
-
 RUN apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 
@@ -68,6 +65,16 @@ RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Switch to non-root user
 USER laravel
+
+# Install Claude Code
+RUN curl -fsSL https://claude.ai/install.sh | bash
+
+RUN echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc && \
+    echo 'alias ll="ls -alh"' >> ~/.bashrc && \
+    echo 'alias cld="claude"' >> ~/.bashrc && \
+    echo 'alias cldc="claude --continue"' >> ~/.bashrc && \
+    echo 'alias cldyolo="claude --dangerously-skip-permissions"' >> ~/.bashrc && \
+    echo 'alias cldcyolo="claude --continue --dangerously-skip-permissions"' >> ~/.bashrc 
 
 EXPOSE 8000 5173
 

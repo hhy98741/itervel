@@ -80,6 +80,9 @@ Temporary Items
 # Build data
 /build/
 
+# Database
+/db_data
+
 ### react ###
 .DS_*
 *.log

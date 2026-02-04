@@ -9,7 +9,6 @@ services:
       - .env
     volumes:
       - .:/var/www
-      #- ~/.claude:/home/laravel/.claude
     ports:
       - "8000:8000"   # Laravel
       - "5173:5173"   # Vite
