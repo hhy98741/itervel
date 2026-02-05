@@ -42,6 +42,12 @@ RUN curl -fsSL https://deb.nodesource.com/setup_24.x | bash - \
     && apt-get install -y nodejs \
     && apt-get clean
 
+# Install Bun
+ENV BUN_INSTALL="/opt/bun"
+RUN curl -fsSL https://bun.sh/install | bash
+ENV PATH="${BUN_INSTALL}/bin:${PATH}"
+
+# Clean up
 RUN apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 
@@ -68,9 +74,9 @@ USER laravel
 
 # Install Claude Code
 RUN curl -fsSL https://claude.ai/install.sh | bash
+ENV PATH="/home/laravel/.local/bin:${PATH}"
 
-RUN echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc && \
-    echo 'alias ll="ls -alh"' >> ~/.bashrc && \
+RUN echo 'alias ll="ls -alh"' >> ~/.bashrc && \
     echo 'alias cld="claude"' >> ~/.bashrc && \
     echo 'alias cldc="claude --continue"' >> ~/.bashrc && \
     echo 'alias cldyolo="claude --dangerously-skip-permissions"' >> ~/.bashrc && \
