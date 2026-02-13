@@ -2,7 +2,8 @@
 
 **Epic**: E004-project-management.md
 **Feature**: E004-F006
-**Dependencies**: E004-F004
+**Epic depends on**: E002-user-authentication.md
+**Feature depends on**: E004-F004
 
 ## Task Description
 

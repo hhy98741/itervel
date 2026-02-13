@@ -2,7 +2,8 @@
 
 **Epic**: E005-credits-and-billing.md
 **Feature**: E005-F006
-**Dependencies**: E005-F001
+**Epic depends on**: E002-user-authentication.md
+**Feature depends on**: E005-F001
 
 ## Task Description
 

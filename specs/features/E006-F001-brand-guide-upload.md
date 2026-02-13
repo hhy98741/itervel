@@ -2,7 +2,8 @@
 
 **Epic**: E006-brand-guide-and-video-input.md
 **Feature**: E006-F001
-**Dependencies**: E004-F001
+**Epic depends on**: E004-project-management.md
+**Feature depends on**: E004-F001
 
 ## Task Description
 

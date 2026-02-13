@@ -2,7 +2,8 @@
 
 **Epic**: E002-user-authentication.md
 **Feature**: E002-F004
-**Dependencies**: E002-F001, E002-F003
+**Epic depends on**: None
+**Feature depends on**: E002-F001, E002-F003
 
 ## Task Description
 

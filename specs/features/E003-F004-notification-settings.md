@@ -2,7 +2,8 @@
 
 **Epic**: E003-user-profile-and-account-management.md
 **Feature**: E003-F004
-**Dependencies**: E003-F001
+**Epic depends on**: E002-user-authentication.md
+**Feature depends on**: E003-F001
 
 ## Task Description
 
