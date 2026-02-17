@@ -6,6 +6,7 @@ FROM php:8.4-fpm AS builder
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     git \
+    gh \
     unzip \
     vim \
     wget \
@@ -79,8 +80,8 @@ ENV PATH="/home/laravel/.local/bin:${PATH}"
 RUN echo 'alias ll="ls -alh"' >> ~/.bashrc && \
     echo 'alias cld="claude"' >> ~/.bashrc && \
     echo 'alias cldc="claude --continue"' >> ~/.bashrc && \
-    echo 'alias cldyolo="claude --dangerously-skip-permissions"' >> ~/.bashrc && \
-    echo 'alias cldcyolo="claude --continue --dangerously-skip-permissions"' >> ~/.bashrc 
+    echo 'alias cldy="claude --dangerously-skip-permissions"' >> ~/.bashrc && \
+    echo 'alias cldyc="claude --dangerously-skip-permissions --continue "' >> ~/.bashrc 
 
 EXPOSE 8000 5173
 
