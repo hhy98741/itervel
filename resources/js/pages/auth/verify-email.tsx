@@ -1,17 +1,21 @@
 // Components
-import { Form, Head } from '@inertiajs/react';
+import { Form, Head, usePage } from '@inertiajs/react';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import AuthLayout from '@/layouts/auth-layout';
 import { logout } from '@/routes';
+import { edit as profileEdit } from '@/routes/profile';
 import { send } from '@/routes/verification';
+import type { SharedData } from '@/types';
 
 export default function VerifyEmail({ status }: { status?: string }) {
+    const { auth } = usePage<SharedData>().props;
+
     return (
         <AuthLayout
             title="Verify email"
-            description="Please verify your email address by clicking on the link we just emailed to you."
+            description={`We've sent a verification email to ${auth.user.email}. Please click the link in the email to verify your account.`}
         >
             <Head title="Email verification" />
 
@@ -22,6 +26,12 @@ export default function VerifyEmail({ status }: { status?: string }) {
                 </div>
             )}
 
+            <p className="text-center text-sm text-muted-foreground">
+                You need to verify your email address before you can create
+                videos. You can still browse the platform and update your
+                settings while unverified.
+            </p>
+
             <Form {...send.form()} className="space-y-6 text-center">
                 {({ processing }) => (
                     <>
@@ -30,12 +40,26 @@ export default function VerifyEmail({ status }: { status?: string }) {
                             Resend verification email
                         </Button>
 
-                        <TextLink
-                            href={logout()}
-                            className="mx-auto block text-sm"
-                        >
-                            Log out
-                        </TextLink>
+                        <p className="text-center text-xs text-muted-foreground">
+                            You can request up to 3 verification emails per
+                            hour.
+                        </p>
+
+                        <div className="flex flex-col gap-2">
+                            <TextLink
+                                href={profileEdit()}
+                                className="mx-auto block text-sm"
+                            >
+                                Update your email address
+                            </TextLink>
+
+                            <TextLink
+                                href={logout()}
+                                className="mx-auto block text-sm"
+                            >
+                                Log out
+                            </TextLink>
+                        </div>
                     </>
                 )}
             </Form>
