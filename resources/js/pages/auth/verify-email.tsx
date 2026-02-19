@@ -4,10 +4,10 @@ import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import AuthLayout from '@/layouts/auth-layout';
+import type { SharedData } from '@/types';
 import { logout } from '@/routes';
 import { edit as profileEdit } from '@/routes/profile';
 import { send } from '@/routes/verification';
-import type { SharedData } from '@/types';
 
 export default function VerifyEmail({ status }: { status?: string }) {
     const { auth } = usePage<SharedData>().props;
