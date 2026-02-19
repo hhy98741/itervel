@@ -10,6 +10,8 @@ services:
     volumes:
       - .:/var/www
       - ./docker-claude:/home/laravel/.claude
+      - ${HOME}/.gitconfig:/home/laravel/.gitconfig:ro
+      - ${HOME}/.ssh:/home/laravel/.ssh:ro
     ports:
       - "8000:8000"   # Laravel
       - "5173:5173"   # Vite
