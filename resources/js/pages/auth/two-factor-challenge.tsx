@@ -106,6 +106,7 @@ export default function TwoFactorChallenge() {
                                 type="submit"
                                 className="w-full"
                                 disabled={processing}
+                                data-test="2fa-challenge-submit-button"
                             >
                                 Continue
                             </Button>
@@ -118,6 +119,7 @@ export default function TwoFactorChallenge() {
                                     onClick={() =>
                                         toggleRecoveryMode(clearErrors)
                                     }
+                                    data-test="2fa-toggle-recovery-button"
                                 >
                                     {authConfigContent.toggleText}
                                 </button>

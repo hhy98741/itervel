@@ -19,9 +19,9 @@ import {
 import { useAppearance } from '@/hooks/use-appearance';
 import { useClipboard } from '@/hooks/use-clipboard';
 import { OTP_MAX_LENGTH } from '@/hooks/use-two-factor-auth';
+import { confirm } from '@/routes/two-factor';
 import AlertError from './alert-error';
 import { Spinner } from './ui/spinner';
-import { confirm } from '@/routes/two-factor';
 
 function GridScanIcon() {
     return (
@@ -181,6 +181,7 @@ function TwoFactorVerificationStep({
                                 onChange={setCode}
                                 disabled={processing}
                                 pattern={REGEXP_ONLY_DIGITS}
+                                data-test="2fa-confirm-code-input"
                             >
                                 <InputOTPGroup>
                                     {Array.from(
@@ -208,6 +209,7 @@ function TwoFactorVerificationStep({
                                 className="flex-1"
                                 onClick={onBack}
                                 disabled={processing}
+                                data-test="2fa-cancel-button"
                             >
                                 Back
                             </Button>
@@ -217,6 +219,7 @@ function TwoFactorVerificationStep({
                                 disabled={
                                     processing || code.length < OTP_MAX_LENGTH
                                 }
+                                data-test="2fa-confirm-button"
                             >
                                 Confirm
                             </Button>

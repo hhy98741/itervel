@@ -4,12 +4,7 @@ FROM php:8.4-fpm AS builder
 # Install system dependencies and PHP extensions required for Laravel + MySQL support
 # Some dependencies are required for PHP extensions only in the build stage
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl \
-    git \
-    gh \
-    unzip \
-    vim \
-    wget \
+    curl gh git unzip vim wget \
     libpng-dev \
     libonig-dev \
     libssl-dev \
@@ -29,7 +24,8 @@ RUN docker-php-ext-install -j$(nproc) \
     gd \
     zip \
     intl \
-    opcache
+    opcache \
+    sockets
 
 RUN pecl install redis && \
     pecl install xdebug && \
@@ -47,6 +43,9 @@ RUN curl -fsSL https://deb.nodesource.com/setup_24.x | bash - \
 ENV BUN_INSTALL="/opt/bun"
 RUN curl -fsSL https://bun.sh/install | bash
 ENV PATH="${BUN_INSTALL}/bin:${PATH}"
+
+# Install Playwright
+RUN npx -y playwright install --with-deps chromium
 
 # Clean up
 RUN apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*

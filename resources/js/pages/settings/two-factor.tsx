@@ -9,8 +9,8 @@ import { Button } from '@/components/ui/button';
 import { useTwoFactorAuth } from '@/hooks/use-two-factor-auth';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
-import type { BreadcrumbItem } from '@/types';
 import { disable, enable, show } from '@/routes/two-factor';
+import type { BreadcrumbItem } from '@/types';
 
 type Props = {
     requiresConfirmation?: boolean;
@@ -76,6 +76,7 @@ export default function TwoFactor({
                                             variant="destructive"
                                             type="submit"
                                             disabled={processing}
+                                            data-test="disable-2fa-button"
                                         >
                                             <ShieldBan /> Disable 2FA
                                         </Button>
@@ -97,6 +98,7 @@ export default function TwoFactor({
                                 {hasSetupData ? (
                                     <Button
                                         onClick={() => setShowSetupModal(true)}
+                                        data-test="continue-2fa-setup-button"
                                     >
                                         <ShieldCheck />
                                         Continue Setup
@@ -112,6 +114,7 @@ export default function TwoFactor({
                                             <Button
                                                 type="submit"
                                                 disabled={processing}
+                                                data-test="enable-2fa-button"
                                             >
                                                 <ShieldCheck />
                                                 Enable 2FA
