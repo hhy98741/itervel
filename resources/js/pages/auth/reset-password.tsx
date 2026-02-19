@@ -37,6 +37,7 @@ export default function ResetPassword({ token, email }: Props) {
                                 value={email}
                                 className="mt-1 block w-full"
                                 readOnly
+                                data-test="reset-password-email"
                             />
                             <InputError
                                 message={errors.email}
@@ -54,6 +55,7 @@ export default function ResetPassword({ token, email }: Props) {
                                 className="mt-1 block w-full"
                                 autoFocus
                                 placeholder="Password"
+                                data-test="reset-password-password"
                             />
                             <InputError message={errors.password} />
                         </div>
@@ -69,6 +71,7 @@ export default function ResetPassword({ token, email }: Props) {
                                 autoComplete="new-password"
                                 className="mt-1 block w-full"
                                 placeholder="Confirm password"
+                                data-test="reset-password-password-confirmation"
                             />
                             <InputError
                                 message={errors.password_confirmation}
@@ -80,7 +83,7 @@ export default function ResetPassword({ token, email }: Props) {
                             type="submit"
                             className="mt-4 w-full"
                             disabled={processing}
-                            data-test="reset-password-button"
+                            data-test="reset-password-submit"
                         >
                             {processing && <Spinner />}
                             Reset password
