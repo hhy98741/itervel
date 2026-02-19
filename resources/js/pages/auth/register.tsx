@@ -9,6 +9,7 @@ import { Spinner } from '@/components/ui/spinner';
 import AuthLayout from '@/layouts/auth-layout';
 import { login } from '@/routes';
 import { store } from '@/routes/register';
+import { show as termsShow } from '@/routes/terms';
 
 export default function Register() {
     return (
@@ -102,7 +103,7 @@ export default function Register() {
                                     <Label htmlFor="terms">
                                         I agree to the{' '}
                                         <a
-                                            href="/terms-of-service"
+                                            href={termsShow.url()}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             data-test="tos-link"
