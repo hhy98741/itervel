@@ -148,6 +148,7 @@ Use these files to complete the task:
 - `/Users/young/Nextcloud/dev/Itervel/app/Http/Controllers/Settings/AccountController.php` -- New controller with a `show()` method that renders the `settings/account` Inertia page with `joinedAt` and `videoCredits` props.
 - `/Users/young/Nextcloud/dev/Itervel/resources/js/pages/settings/account.tsx` -- New Inertia page component displaying the user's account overview (name, email, verification status, join date, credit balance) in a read-only layout.
 - `/Users/young/Nextcloud/dev/Itervel/tests/Feature/Settings/AccountTest.php` -- Pest feature tests for the account overview page.
+- `tests/Browser/Settings/AccountOverviewTest.php` -- Pest browser tests: smoke test for the account overview page, dark mode spot check, and verification that account details render correctly using `data-test` selectors.
 
 ## Team Orchestration
 
@@ -173,6 +174,12 @@ Use these files to complete the task:
 - Test Developer
     - Name: profile-test-dev
     - Role: Writes comprehensive Pest feature tests for the account overview page
+    - Agent Type: coder
+    - Resume: false
+
+- Browser Test Developer
+    - Name: profile-browser-test-dev
+    - Role: Writes Pest browser tests (smoke test, dark mode check, account details display test) for the account overview page
     - Agent Type: coder
     - Resume: false
 
@@ -239,6 +246,11 @@ Use these files to complete the task:
     - Export default function `Account` with destructured props
     - Access `auth.user` via `usePage<SharedData>().props`
     - Render within `AppLayout > SettingsLayout`:
+    - Add `data-test` attributes to key elements for browser testing:
+        - `data-test="account-email"` on the email value element
+        - `data-test="account-verification-badge"` on the verification status Badge
+        - `data-test="account-join-date"` on the join date value element
+        - `data-test="account-video-credits"` on the video credits value element
         - A `Heading` with `variant="small"`, `title="Account overview"`, `description="Your account information at a glance"`
         - A container div with the user's avatar (large, using Avatar/AvatarFallback/AvatarImage from the existing component) and their name prominently displayed
         - A definition list (`dl`) style layout with labeled rows for:
@@ -347,10 +359,34 @@ Use these files to complete the task:
 - Ensure all tests pass
 - Run `vendor/bin/pint --dirty` to fix any formatting issues
 
-### 4. Validate Complete Implementation
+### 4. Write Browser Tests
+
+- **Task ID**: write-browser-tests
+- **Depends On**: create-frontend-page
+- **Assigned To**: profile-browser-test-dev
+- **Agent Type**: coder
+- **Parallel**: true
+- Create `tests/Browser/Settings/AccountOverviewTest.php`
+- Write a smoke test for the account overview page:
+    - Create and authenticate a user
+    - Visit `/settings/account`
+    - Assert the page loads successfully with no JavaScript errors
+- Write a dark mode spot check:
+    - Visit the account page, switch to dark color scheme using `colorScheme('dark')`, assert no JavaScript errors
+- Write an account details display test:
+    - Create a user with specific attributes (verified email, known video credits)
+    - Visit the account page
+    - Assert the email is visible using `[data-test="account-email"]`
+    - Assert the verification badge is visible using `[data-test="account-verification-badge"]`
+    - Assert no JavaScript errors
+- Use `data-test` selectors for all element interactions
+- Ensure all browser tests use `assertNoJavaScriptErrors()`
+- Run browser tests: `php artisan test tests/Browser/Settings/AccountOverviewTest.php --compact`
+
+### 5. Validate Complete Implementation
 
 - **Task ID**: validate-all
-- **Depends On**: create-backend-controller-route, create-frontend-page, write-account-tests
+- **Depends On**: create-backend-controller-route, create-frontend-page, write-account-tests, write-browser-tests
 - **Assigned To**: profile-reviewer
 - **Agent Type**: reviewer
 - **Parallel**: false
@@ -370,6 +406,8 @@ Use these files to complete the task:
 - Verify the settings sidebar layout includes the "Account" nav item at the top
 - Verify the settings redirect has been updated from `/settings/profile` to `/settings/account`
 - Verify the account page displays: user name, email, email verification status (with Badge), join date, and video credits
+- Run browser tests: `php artisan test tests/Browser/Settings/AccountOverviewTest.php --compact`
+- Verify `data-test` attributes exist on interactive elements in the account page component
 - Confirm all acceptance criteria are met
 
 ## Acceptance Criteria
@@ -391,6 +429,11 @@ Use these files to complete the task:
 - TypeScript types compile without errors
 - ESLint and Prettier checks pass
 - PHP code passes Pint formatting
+- All new pages have smoke tests (no JavaScript errors)
+- Dark mode spot check passes for the account overview page
+- Account details display correctly in browser tests using `data-test` selectors
+- Interactive frontend elements have `data-test` attributes
+- All browser tests pass
 
 ## Validation Commands
 
@@ -423,6 +466,9 @@ vendor/bin/pint --dirty
 
 # Verify route exists
 php artisan route:list --path=settings/account
+
+# Run browser tests
+php artisan test tests/Browser/Settings/AccountOverviewTest.php --compact
 ```
 
 ## Notes

@@ -151,6 +151,7 @@ Use these files to complete the task:
 ### New Files
 
 - `tests/Feature/SetDefaultProjectTest.php` -- Pest feature tests for the set-default-project functionality covering authorization, atomicity, edge cases, and the `defaultProject()` relationship.
+- `tests/Browser/SetDefaultProjectTest.php` -- Pest browser tests: smoke test for default badge rendering, dark mode spot check, and set-default flow test using `data-test` selectors.
 
 ## Team Orchestration
 
@@ -183,6 +184,12 @@ Use these files to complete the task:
     - Name: set-default-reviewer
     - Role: Validates the complete feature against acceptance criteria, runs all tests, checks TypeScript types, runs linting and formatting
     - Agent Type: reviewer
+    - Resume: false
+
+- Browser Test Developer
+    - Name: set-default-browser-test-dev
+    - Role: Writes Pest browser tests (smoke tests, dark mode checks, interactive flow tests) for the set-default project functionality on the index page and project switcher
+    - Agent Type: coder
     - Resume: false
 
 ## Step by Step Tasks
@@ -300,6 +307,9 @@ Use these files to complete the task:
         }
         ```
     - Alternatively, a cleaner approach is to add a `DropdownMenuSub` or simply show the star icon filled for the default project and outlined for others -- clicking the outlined star sets it as default. Choose the approach that best fits the existing component's structure.
+- Add `data-test` attributes to interactive elements for browser testing:
+    - `data-test="default-project-star"` on the star icon indicator for the default project
+    - `data-test="set-default-star"` on the clickable star button for setting a project as default in the dropdown
 - Read `/Users/young/Nextcloud/dev/Itervel/resources/js/pages/projects/index.tsx` to understand its current structure
 - Enhance `/Users/young/Nextcloud/dev/Itervel/resources/js/pages/projects/index.tsx`:
     - Add `import { router } from '@inertiajs/react';` (if not already imported)
@@ -339,6 +349,9 @@ Use these files to complete the task:
         }
         ```
     - Ensure the props interface for the page includes the project data with `is_default` field. The projects are passed from the controller and should already include `is_default` since it is in the model's attributes.
+- Add `data-test` attributes to interactive elements for browser testing:
+    - `data-test="default-badge"` on the "Default" badge shown on the default project card
+    - `data-test="set-default-button"` on the "Set as default" button on non-default project cards
 - Run `npm run build` to generate Wayfinder routes and compile assets
 - Verify no TypeScript errors: `npm run types`
 - Run `npm run lint` and fix any issues with `npm run lint:fix`
@@ -527,10 +540,36 @@ Use these files to complete the task:
 - Fix any failing tests until all pass
 - Run `vendor/bin/pint --dirty` to fix formatting
 
-### 4. Validate Complete Implementation
+### 4. Write Browser Tests
+
+- **Task ID**: write-browser-tests
+- **Depends On**: create-set-default-frontend, create-set-default-backend
+- **Assigned To**: set-default-browser-test-dev
+- **Agent Type**: coder
+- **Parallel**: false
+- Create `tests/Browser/SetDefaultProjectTest.php`
+- Write a smoke test for the projects index page with default indicators:
+    - Create a user with a default project, visit `/projects`, assert no JavaScript errors
+    - Assert `[data-test="default-badge"]` is visible on the default project card
+- Write a dark mode spot check for the projects index page:
+    - Visit `/projects`, switch to dark color scheme, assert no JavaScript errors
+- Write an interactive flow test for setting a project as default from the index page:
+    - Create a user with two projects (one default, one not)
+    - Visit `/projects`
+    - Assert `[data-test="set-default-button"]` is visible on the non-default project card
+    - Click `[data-test="set-default-button"]` on the non-default project
+    - Assert the page refreshes and the `[data-test="default-badge"]` moves to the newly defaulted project
+- Write a flow test for the project switcher default indicator:
+    - Visit `/dashboard`, click `[data-test="project-switcher-trigger"]` (from E004-F003)
+    - Assert `[data-test="default-project-star"]` is visible for the default project
+- Use `data-test` selectors for all element interactions
+- Ensure all browser tests use `assertNoJavaScriptErrors()`
+- Run browser tests: `php artisan test tests/Browser/SetDefaultProjectTest.php --compact`
+
+### 5. Validate Complete Implementation
 
 - **Task ID**: validate-all
-- **Depends On**: create-set-default-backend, create-set-default-frontend, write-set-default-tests
+- **Depends On**: create-set-default-backend, create-set-default-frontend, write-set-default-tests, write-browser-tests
 - **Assigned To**: set-default-reviewer
 - **Agent Type**: reviewer
 - **Parallel**: false
@@ -547,6 +586,8 @@ Use these files to complete the task:
     - `resources/js/components/project-switcher.tsx` shows a default indicator (star icon) on the default project and offers a "Set as default" action on non-default projects
     - `resources/js/pages/projects/index.tsx` shows a "Default" badge on the default project card and a "Set as default" button on non-default cards
     - `tests/Feature/SetDefaultProjectTest.php` has all test cases covering authorization, atomicity, idempotency, cross-user isolation, relationship helper, and edge cases
+- Run browser tests: `php artisan test tests/Browser/SetDefaultProjectTest.php --compact`
+- Verify `data-test` attributes exist on interactive elements in `resources/js/components/project-switcher.tsx` and `resources/js/pages/projects/index.tsx`
 - Verify routes exist: `php artisan route:list --name=projects`
 - Confirm all acceptance criteria are met
 
@@ -569,6 +610,11 @@ Use these files to complete the task:
 - All existing tests continue to pass (no regressions)
 - PHP code passes Pint formatting
 - TypeScript passes type checking
+- All new pages/components have smoke tests (no JavaScript errors)
+- Dark mode spot check passes for the projects index page with default indicators
+- Set-default flow passes browser tests using `data-test` selectors
+- Interactive frontend elements have `data-test` attributes
+- All browser tests pass
 - ESLint reports no errors
 
 ## Validation Commands
@@ -593,6 +639,9 @@ npm run lint
 
 # PHP code formatting
 vendor/bin/pint --dirty
+
+# Run browser tests
+php artisan test tests/Browser/SetDefaultProjectTest.php --compact
 ```
 
 ## Notes

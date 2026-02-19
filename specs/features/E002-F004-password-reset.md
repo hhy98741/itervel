@@ -194,6 +194,7 @@ Use these files to complete the task:
 
 - `/Users/young/Nextcloud/dev/Itervel/app/Notifications/PasswordChanged.php` -- Mail notification sent to the user after a successful password reset. Informs them their password was changed and advises contacting support if they did not initiate the change. Created with `php artisan make:notification PasswordChanged --no-interaction`.
 - `/Users/young/Nextcloud/dev/Itervel/app/Listeners/SendPasswordChangedNotification.php` -- Event listener that listens for `Illuminate\Auth\Events\PasswordReset` and sends the `PasswordChanged` notification to the user. Created with `php artisan make:listener SendPasswordChangedNotification --event=PasswordReset --no-interaction`.
+- `/Users/young/Nextcloud/dev/Itervel/tests/Browser/Auth/PasswordResetTest.php` -- Pest browser tests: smoke tests for forgot-password and reset-password pages, dark mode spot check, and core password reset flow tests using `data-test` selectors.
 
 ## Team Orchestration
 
@@ -213,6 +214,12 @@ Use these files to complete the task:
 - Test Developer
     - Name: password-reset-test-dev
     - Role: Expands the password reset test suite to cover rate limiting, notification sending, single-use tokens, token expiry, and validation edge cases
+    - Agent Type: coder
+    - Resume: false
+
+- Browser Test Developer
+    - Name: password-reset-browser-test-dev
+    - Role: Adds `data-test` attributes to existing forgot-password and reset-password frontend pages, then writes Pest browser tests (smoke tests, dark mode check, interactive flow tests) for the password reset user flows
     - Agent Type: coder
     - Resume: false
 
@@ -447,15 +454,53 @@ Use these files to complete the task:
 - Ensure all tests pass. If any test fails, debug and fix until all pass.
 - Run `vendor/bin/pint --dirty` to fix any formatting issues in the test file.
 
-### 3. Validate Complete Implementation
+### 3. Add `data-test` Attributes and Write Browser Tests
+
+- **Task ID**: write-browser-tests
+- **Depends On**: backend-rate-limiting-and-notification, write-password-reset-tests
+- **Assigned To**: password-reset-browser-test-dev
+- **Agent Type**: coder
+- **Parallel**: false
+- Read the existing frontend pages to understand the current markup:
+    - `/Users/young/Nextcloud/dev/Itervel/resources/js/pages/auth/forgot-password.tsx`
+    - `/Users/young/Nextcloud/dev/Itervel/resources/js/pages/auth/reset-password.tsx`
+- Add `data-test` attributes to interactive elements in `/Users/young/Nextcloud/dev/Itervel/resources/js/pages/auth/forgot-password.tsx`:
+    - `data-test="forgot-password-email"` on the email input field
+    - `data-test="forgot-password-submit"` on the submit button
+- Add `data-test` attributes to interactive elements in `/Users/young/Nextcloud/dev/Itervel/resources/js/pages/auth/reset-password.tsx`:
+    - `data-test="reset-password-email"` on the email input field
+    - `data-test="reset-password-password"` on the password input field
+    - `data-test="reset-password-password-confirmation"` on the password confirmation input field
+    - `data-test="reset-password-submit"` on the submit button
+- Create `tests/Browser/Auth/PasswordResetTest.php` using `php artisan make:test --pest Browser/Auth/PasswordResetTest --no-interaction`
+- Write a smoke test for the forgot-password page:
+    - Visit `/forgot-password` as a guest
+    - Assert successful response and no JavaScript errors
+- Write a smoke test for the reset-password page:
+    - Visit `/reset-password/test-token?email=test@example.com` as a guest
+    - Assert successful response and no JavaScript errors
+- Write a dark mode spot check for the forgot-password page:
+    - Visit `/forgot-password`, switch to dark color scheme with `colorScheme('dark')`, assert no JavaScript errors
+- Write an interactive flow test for requesting a password reset link:
+    - Visit `/forgot-password`
+    - Fill in the email field using `[data-test="forgot-password-email"]`
+    - Click `[data-test="forgot-password-submit"]`
+    - Assert the status message is displayed (e.g., "We have emailed your password reset link")
+    - Assert no JavaScript errors
+- Run browser tests: `php artisan test tests/Browser/Auth/PasswordResetTest.php --compact`
+- Run `npm run lint` to verify no linting issues after adding `data-test` attributes
+- Run `vendor/bin/pint --dirty` to fix any formatting issues
+
+### 4. Validate Complete Implementation
 
 - **Task ID**: validate-all
-- **Depends On**: backend-rate-limiting-and-notification, write-password-reset-tests
+- **Depends On**: backend-rate-limiting-and-notification, write-password-reset-tests, write-browser-tests
 - **Assigned To**: password-reset-reviewer
 - **Agent Type**: reviewer
 - **Parallel**: false
 - Run all validation commands listed below
 - Verify password reset tests pass: `php artisan test tests/Feature/Auth/PasswordResetTest.php --compact`
+- Verify browser tests pass: `php artisan test tests/Browser/Auth/PasswordResetTest.php --compact`
 - Verify all auth tests pass: `php artisan test tests/Feature/Auth --compact`
 - Run the full test suite to ensure no regressions: `php artisan test --compact`
 - Run TypeScript type checking: `npm run types`
@@ -469,6 +514,7 @@ Use these files to complete the task:
 - Verify `config('auth.passwords.users.expire')` is `60` (1 hour)
 - Verify the forgot-password page (`/forgot-password`) renders correctly
 - Verify the reset-password page (`/reset-password/{token}`) renders correctly
+- Verify `data-test` attributes exist on interactive elements in `forgot-password.tsx` and `reset-password.tsx`
 - Verify the test file covers: rate limiting (3 per hour), notification sending, single-use tokens, password mismatch, missing email, invalid email format, token expiry configuration
 - Confirm all acceptance criteria are met
 
@@ -490,6 +536,11 @@ Use these files to complete the task:
 - PHP code passes Pint formatting
 - TypeScript types compile without errors
 - ESLint checks pass
+- All new pages have smoke tests (no JavaScript errors)
+- Dark mode spot check passes for the forgot-password page
+- Core password reset flow passes browser tests using `data-test` selectors
+- Interactive frontend elements have `data-test` attributes
+- All browser tests pass
 
 ## Validation Commands
 
@@ -513,11 +564,14 @@ npm run lint
 
 # PHP code formatting
 vendor/bin/pint --dirty
+
+# Run browser tests
+php artisan test tests/Browser/Auth/PasswordResetTest.php --compact
 ```
 
 ## Notes
 
-- The frontend pages (`forgot-password.tsx` and `reset-password.tsx`) do not need any changes. They are already fully functional with all required UI elements: email input, password fields, submit buttons, status messages, and error displays.
+- The frontend pages (`forgot-password.tsx` and `reset-password.tsx`) do not need functional changes. They are already fully functional with all required UI elements: email input, password fields, submit buttons, status messages, and error displays. The only frontend modification is adding `data-test` attributes to interactive elements for browser testing.
 - The `config/auth.php` password reset configuration already has `'expire' => 60` (1 hour) and `'throttle' => 60` (60-second cooldown between token creations). The `throttle` setting is the broker's built-in cooldown and acts as a secondary protection on top of our custom rate limiter. We keep it as-is.
 - The `PasswordChanged` notification should implement `ShouldQueue` so sending the email does not block the password reset response. If the queue is not configured (using sync driver), it will still execute synchronously, which is fine for development.
 - The rate limiter uses `$request->input('email')` as the key, meaning rate limiting is per-email, not per-IP. This means if multiple IPs try to reset the same email, they share the 3-request-per-hour limit. This is the correct behavior for preventing abuse against a specific email address.

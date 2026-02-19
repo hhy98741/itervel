@@ -217,6 +217,7 @@ Use these files to complete the task:
 
 - `resources/js/components/project-switcher.tsx` -- Sidebar dropdown component showing all user projects with video counts, active project indicator, and switch functionality. Uses `DropdownMenu` and Inertia router for switching.
 - `tests/Feature/ProjectSwitchTest.php` -- Pest feature tests for project switching, session persistence, authorization, fallback behavior, and shared data.
+- `tests/Browser/ProjectSwitchTest.php` -- Pest browser tests: smoke test for project switcher rendering, dark mode spot check, and project switching flow test using `data-test` selectors.
 
 ## Team Orchestration
 
@@ -249,6 +250,12 @@ Use these files to complete the task:
     - Name: project-switch-reviewer
     - Role: Validates the complete feature against acceptance criteria, runs all tests, checks TypeScript types, runs linting and formatting
     - Agent Type: reviewer
+    - Resume: false
+
+- Browser Test Developer
+    - Name: project-switch-browser-test-dev
+    - Role: Writes Pest browser tests (smoke tests, dark mode checks, interactive flow tests) for the project switcher and switching functionality
+    - Agent Type: coder
     - Resume: false
 
 ## Step by Step Tasks
@@ -503,6 +510,10 @@ Use these files to complete the task:
         ```
 
     - NOTE: The Wayfinder route for `projects.switch` will be auto-generated after `npm run build`. Until then, the component can use a direct URL string `/projects/${projectId}/switch` with `router.post()`. After Wayfinder generates, it can be replaced with the generated route function. Using `router.post()` directly with the URL is acceptable.
+    - Add `data-test` attributes to interactive elements for browser testing:
+        - `data-test="project-switcher-trigger"` on the `SidebarMenuButton` trigger
+        - `data-test="project-switcher-item"` on each `DropdownMenuItem` for projects
+        - `data-test="manage-projects-link"` on the "Manage projects" link
 
 - Edit `/Users/young/Nextcloud/dev/Itervel/resources/js/components/app-sidebar.tsx`:
     - Add `import { ProjectSwitcher } from '@/components/project-switcher';`
@@ -530,6 +541,9 @@ Use these files to complete the task:
     - Add a visual indicator (e.g., a border color or badge) for the currently active project by comparing `project.id` against `currentProject?.id` from shared data
     - Add a "Switch to this project" button on each project card that calls `router.post(/projects/${project.id}/switch)` -- or use a simple link/button pattern
     - If the project is already the active project, show "Active" instead of the switch button
+    - Add `data-test` attributes to interactive elements for browser testing:
+        - `data-test="switch-project-button"` on each "Switch to this project" button
+        - `data-test="active-project-indicator"` on the active project indicator
 - Run `npm run build` to generate Wayfinder routes and compile assets
 - Verify no TypeScript errors: `npm run types`
 - Run `npm run lint` and fix any issues with `npm run lint:fix`
@@ -793,10 +807,36 @@ Use these files to complete the task:
 - Fix any failing tests until all pass
 - Run `vendor/bin/pint --dirty` to fix formatting
 
-### 4. Validate Complete Implementation
+### 4. Write Browser Tests
+
+- **Task ID**: write-browser-tests
+- **Depends On**: create-frontend-switcher, create-switch-backend
+- **Assigned To**: project-switch-browser-test-dev
+- **Agent Type**: coder
+- **Parallel**: false
+- Create `tests/Browser/ProjectSwitchTest.php`
+- Write a smoke test for the project switcher on the dashboard:
+    - Create a user with a project, visit `/dashboard`, assert no JavaScript errors
+    - Assert `[data-test="project-switcher-trigger"]` is visible
+- Write a dark mode spot check for the dashboard with project switcher:
+    - Visit `/dashboard`, switch to dark color scheme, assert no JavaScript errors
+- Write an interactive flow test for switching projects:
+    - Create a user with two projects
+    - Visit `/dashboard`, click `[data-test="project-switcher-trigger"]`
+    - Assert both projects appear as `[data-test="project-switcher-item"]`
+    - Click the second project item
+    - Assert the switcher trigger now shows the second project name
+- Write a flow test for the "Manage projects" link:
+    - Click `[data-test="project-switcher-trigger"]`, then click `[data-test="manage-projects-link"]`
+    - Assert navigation to `/projects`
+- Use `data-test` selectors for all element interactions
+- Ensure all browser tests use `assertNoJavaScriptErrors()`
+- Run browser tests: `php artisan test tests/Browser/ProjectSwitchTest.php --compact`
+
+### 5. Validate Complete Implementation
 
 - **Task ID**: validate-all
-- **Depends On**: create-switch-backend, create-frontend-switcher, write-switch-tests
+- **Depends On**: create-switch-backend, create-frontend-switcher, write-switch-tests, write-browser-tests
 - **Assigned To**: project-switch-reviewer
 - **Agent Type**: reviewer
 - **Parallel**: false
@@ -817,6 +857,8 @@ Use these files to complete the task:
     - `resources/js/pages/projects/index.tsx` shows video counts and active project indicator
     - `tests/Feature/ProjectSwitchTest.php` has all test cases covering switching, authorization, session persistence, fallback, and shared data
 - Verify routes exist: `php artisan route:list --name=projects`
+- Run browser tests: `php artisan test tests/Browser/ProjectSwitchTest.php --compact`
+- Verify `data-test` attributes exist on interactive elements in `resources/js/components/project-switcher.tsx` and `resources/js/pages/projects/index.tsx`
 - Confirm all acceptance criteria are met
 
 ## Acceptance Criteria
@@ -841,6 +883,11 @@ Use these files to complete the task:
 - All existing tests continue to pass (no regressions)
 - PHP code passes Pint formatting
 - TypeScript passes type checking
+- All new pages/components have smoke tests (no JavaScript errors)
+- Dark mode spot check passes for the dashboard with project switcher
+- Project switching flow passes browser tests using `data-test` selectors
+- Interactive frontend elements have `data-test` attributes
+- All browser tests pass
 - ESLint reports no errors
 
 ## Validation Commands
@@ -868,6 +915,9 @@ npm run lint
 
 # PHP code formatting
 vendor/bin/pint --dirty
+
+# Run browser tests
+php artisan test tests/Browser/ProjectSwitchTest.php --compact
 ```
 
 ## Notes

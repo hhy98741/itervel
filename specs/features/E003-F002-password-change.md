@@ -126,7 +126,7 @@ Use these files to complete the task:
 
 ### New Files
 
-No new files need to be created. All changes are expansions to the existing test file.
+- `tests/Browser/Settings/PasswordChangeTest.php` -- Pest browser tests: smoke test for the password settings page, dark mode spot check, and password change form flow test using `data-test` selectors.
 
 ## Team Orchestration
 
@@ -140,6 +140,12 @@ No new files need to be created. All changes are expansions to the existing test
 - Test Developer
     - Name: password-test-dev
     - Role: Expands the password update test suite to comprehensively cover all password change scenarios including validation rules, authentication guards, throttling, edge cases, and success behavior
+    - Agent Type: coder
+    - Resume: false
+
+- Browser Test Developer
+    - Name: password-browser-test-dev
+    - Role: Writes Pest browser tests (smoke test, dark mode check, password change form flow) for the password settings page and adds data-test attributes to the frontend
     - Agent Type: coder
     - Resume: false
 
@@ -344,10 +350,42 @@ No new files need to be created. All changes are expansions to the existing test
 - Ensure all tests pass. If any test fails, debug and fix until all pass
 - Run `vendor/bin/pint --dirty` to fix any formatting issues in the test file
 
-### 2. Validate Complete Implementation
+### 2. Write Browser Tests
+
+- **Task ID**: write-browser-tests
+- **Depends On**: expand-password-tests
+- **Assigned To**: password-browser-test-dev
+- **Agent Type**: coder
+- **Parallel**: true
+- Add `data-test` attributes to the password settings page at `/Users/young/Nextcloud/dev/Itervel/resources/js/pages/settings/password.tsx`:
+    - `data-test="current-password-input"` on the current password input field
+    - `data-test="new-password-input"` on the new password input field
+    - `data-test="confirm-password-input"` on the confirm password input field
+    - `data-test="save-password-button"` on the save button
+- Create `tests/Browser/Settings/PasswordChangeTest.php`
+- Write a smoke test for the password settings page:
+    - Create and authenticate a user
+    - Visit `/settings/password`
+    - Assert the page loads successfully with no JavaScript errors
+- Write a dark mode spot check:
+    - Visit the password page, switch to dark color scheme using `colorScheme('dark')`, assert no JavaScript errors
+- Write a password change form flow test:
+    - Create and authenticate a user
+    - Visit the password page
+    - Fill in the current password using `[data-test="current-password-input"]`
+    - Fill in the new password using `[data-test="new-password-input"]`
+    - Fill in the confirm password using `[data-test="confirm-password-input"]`
+    - Click the save button using `[data-test="save-password-button"]`
+    - Assert the "Saved" confirmation message appears
+    - Assert no JavaScript errors
+- Use `data-test` selectors for all element interactions
+- Ensure all browser tests use `assertNoJavaScriptErrors()`
+- Run browser tests: `php artisan test tests/Browser/Settings/PasswordChangeTest.php --compact`
+
+### 3. Validate Complete Implementation
 
 - **Task ID**: validate-all
-- **Depends On**: expand-password-tests
+- **Depends On**: expand-password-tests, write-browser-tests
 - **Assigned To**: password-reviewer
 - **Agent Type**: reviewer
 - **Parallel**: false
@@ -375,6 +413,8 @@ No new files need to be created. All changes are expansions to the existing test
     - A success confirmation message appears after save
     - The form resets fields on success and error fields on error
 - Verify the test file covers: page rendering, successful update, wrong current password, guest access denial (both GET and PUT), required fields (current password, new password), password confirmation (missing and mismatched), password hashing, old password invalidation, redirect behavior
+- Run browser tests: `php artisan test tests/Browser/Settings/PasswordChangeTest.php --compact`
+- Verify `data-test` attributes exist on interactive elements in the password settings page
 - Confirm all acceptance criteria are met
 
 ## Acceptance Criteria
@@ -395,6 +435,11 @@ No new files need to be created. All changes are expansions to the existing test
 - PHP code passes Pint formatting
 - TypeScript type checking passes
 - ESLint linting passes
+- The password settings page has a smoke test (no JavaScript errors)
+- Dark mode spot check passes for the password settings page
+- Password change form flow passes browser test using `data-test` selectors
+- Interactive frontend elements have `data-test` attributes
+- All browser tests pass
 
 ## Validation Commands
 
@@ -418,6 +463,9 @@ npm run lint
 
 # PHP code formatting
 vendor/bin/pint --dirty
+
+# Run browser tests
+php artisan test tests/Browser/Settings/PasswordChangeTest.php --compact
 ```
 
 ## Notes
@@ -428,4 +476,5 @@ vendor/bin/pint --dirty
 - The `hashed` cast on the User model's `password` attribute means the password is automatically hashed when assigned via mass assignment (`$user->update(['password' => ...])`) or property assignment. The controller does not need to manually hash the password.
 - The route uses `throttle:6,1` middleware which limits the password update endpoint to 6 requests per minute per user/IP. This protects against brute-force attempts to guess the current password.
 - The frontend form uses Inertia's `<Form>` component (not `useForm`), which provides built-in support for `processing` state, `errors`, `recentlySuccessful`, `resetOnError`, and `resetOnSuccess`. This is a pattern used throughout the settings pages.
+- The password settings page (`resources/js/pages/settings/password.tsx`) should have `data-test` attributes on interactive elements for browser testing. If not already present, they should be added: `data-test="current-password-input"` on the current password field, `data-test="new-password-input"` on the new password field, `data-test="confirm-password-input"` on the confirm password field, and `data-test="save-password-button"` on the save button.
 - All commands should be run inside the Docker container. Use `make shell` to enter the container, or prefix with `docker compose exec app`.

@@ -186,6 +186,7 @@ Use these files to complete the task:
 - `/Users/young/Nextcloud/dev/Itervel/app/Http/Requests/Settings/PreferencesUpdateRequest.php` -- Form request class with validation rules for the three preference fields.
 - `/Users/young/Nextcloud/dev/Itervel/resources/js/pages/settings/preferences.tsx` -- New Inertia page component with a form for editing video creation defaults (video length, speaking pace, script iterations).
 - `/Users/young/Nextcloud/dev/Itervel/tests/Feature/Settings/PreferencesTest.php` -- Pest feature tests covering page access, form submission, validation, and authorization.
+- `tests/Browser/Settings/PreferencesTest.php` -- Pest browser tests: smoke test for the preferences page, dark mode spot check, and preferences form submission flow test using `data-test` selectors.
 
 ## Team Orchestration
 
@@ -211,6 +212,12 @@ Use these files to complete the task:
 - Test Developer
     - Name: preferences-test-dev
     - Role: Writes comprehensive Pest feature tests for the preferences page covering access, submission, validation, and authorization
+    - Agent Type: coder
+    - Resume: false
+
+- Browser Test Developer
+    - Name: preferences-browser-test-dev
+    - Role: Writes Pest browser tests (smoke test, dark mode check, form submission flow) for the preferences settings page
     - Agent Type: coder
     - Resume: false
 
@@ -380,6 +387,11 @@ Use these files to complete the task:
         - **Default Video Length** field: Use `Select` component with name `default_video_length`. Options from 1-20 minutes. Default value from `defaultVideoLength.toString()`. Include a hidden input with `name="default_video_length"` to submit the value (or use the Select's native form submission). Add a description below: "The default duration for new videos (1-20 minutes)."
         - **Speaking Pace** field: Use `Input` with `type="number"`, `name="default_speaking_pace"`, `min={100}`, `max={200}`, `defaultValue={defaultSpeakingPace}`. Add a description below: "Words per minute for voiceover pacing (100-200 WPM)."
         - **Script Iterations** field: Use `Select` component with name `default_script_iterations`. Options from 0-5. Default value from `defaultScriptIterations.toString()`. Add a description below: "Number of AI critique-and-refinement rounds (0-5)."
+        - Add `data-test` attributes to interactive elements for browser testing:
+            - `data-test="video-length-select"` on the video length Select trigger
+            - `data-test="speaking-pace-input"` on the speaking pace Input
+            - `data-test="script-iterations-select"` on the script iterations Select trigger
+            - `data-test="update-preferences-button"` on the save button (already specified above)
         - **Save button and success transition**: Follow the exact pattern from profile.tsx:
             ```tsx
             <div className="flex items-center gap-4">
@@ -624,10 +636,35 @@ Use these files to complete the task:
     vendor/bin/pint --dirty
     ```
 
-### 4. Validate Complete Implementation
+### 4. Write Browser Tests
+
+- **Task ID**: write-browser-tests
+- **Depends On**: create-frontend-page, write-preferences-tests
+- **Assigned To**: preferences-browser-test-dev
+- **Agent Type**: coder
+- **Parallel**: false
+- Create `tests/Browser/Settings/PreferencesTest.php`
+- Write a smoke test for the preferences page:
+    - Create and authenticate a verified user
+    - Visit `/settings/preferences`
+    - Assert the page loads successfully with no JavaScript errors
+- Write a dark mode spot check:
+    - Visit the preferences page, switch to dark color scheme using `colorScheme('dark')`, assert no JavaScript errors
+- Write a preferences form submission flow test:
+    - Create and authenticate a verified user
+    - Visit the preferences page
+    - Change the speaking pace value using `[data-test="speaking-pace-input"]`
+    - Click the save button using `[data-test="update-preferences-button"]`
+    - Assert the "Saved" confirmation message appears
+    - Assert no JavaScript errors
+- Use `data-test` selectors for all element interactions
+- Ensure all browser tests use `assertNoJavaScriptErrors()`
+- Run browser tests: `php artisan test tests/Browser/Settings/PreferencesTest.php --compact`
+
+### 5. Validate Complete Implementation
 
 - **Task ID**: validate-all
-- **Depends On**: create-backend-foundation, create-frontend-page, write-preferences-tests
+- **Depends On**: create-backend-foundation, create-frontend-page, write-preferences-tests, write-browser-tests
 - **Assigned To**: preferences-reviewer
 - **Agent Type**: reviewer
 - **Parallel**: false
@@ -652,6 +689,8 @@ Use these files to complete the task:
 - Verify the form submits via PATCH to the update route
 - Verify validation error messages display correctly for each field
 - Verify the success feedback ("Saved") transition works
+- Run browser tests: `php artisan test tests/Browser/Settings/PreferencesTest.php --compact`
+- Verify `data-test` attributes exist on interactive elements in the preferences page component
 - Confirm all acceptance criteria are met
 
 ## Acceptance Criteria
@@ -675,6 +714,11 @@ Use these files to complete the task:
 - TypeScript types compile without errors
 - ESLint and Prettier checks pass
 - PHP code passes Pint formatting
+- All new pages have smoke tests (no JavaScript errors)
+- Dark mode spot check passes for the preferences page
+- Preferences form submission flow passes browser test using `data-test` selectors
+- Interactive frontend elements have `data-test` attributes
+- All browser tests pass
 
 ## Validation Commands
 
@@ -704,6 +748,9 @@ vendor/bin/pint --dirty
 
 # Verify routes exist
 php artisan route:list --path=settings/preferences
+
+# Run browser tests
+php artisan test tests/Browser/Settings/PreferencesTest.php --compact
 ```
 
 ## Notes

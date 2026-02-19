@@ -188,6 +188,7 @@ Use these files to complete the task:
 - `/Users/young/Nextcloud/dev/Itervel/app/Http/Requests/Settings/NotificationUpdateRequest.php` -- Form request class with validation rule for the `email_notifications_enabled` boolean field.
 - `/Users/young/Nextcloud/dev/Itervel/resources/js/pages/settings/notifications.tsx` -- New Inertia page component with a checkbox toggle for enabling/disabling email notifications.
 - `/Users/young/Nextcloud/dev/Itervel/tests/Feature/Settings/NotificationSettingsTest.php` -- Pest feature tests covering page access, toggle submission, validation, and authorization.
+- `tests/Browser/Settings/NotificationSettingsTest.php` -- Pest browser tests: smoke test for the notification settings page, dark mode spot check, and notification toggle flow test using `data-test` selectors.
 
 ## Team Orchestration
 
@@ -213,6 +214,12 @@ Use these files to complete the task:
 - Test Developer
     - Name: notifications-test-dev
     - Role: Writes comprehensive Pest feature tests for the notification settings page covering access, toggle submission, validation, and authorization
+    - Agent Type: coder
+    - Resume: false
+
+- Browser Test Developer
+    - Name: notifications-browser-test-dev
+    - Role: Writes Pest browser tests (smoke test, dark mode check, notification toggle flow) for the notification settings page
     - Agent Type: coder
     - Resume: false
 
@@ -409,6 +416,9 @@ Use these files to complete the task:
             </p>
             ```
         - An `InputError` for the `email_notifications_enabled` field
+        - Add `data-test` attributes to interactive elements for browser testing:
+            - `data-test="email-notifications-checkbox"` on the Checkbox component
+            - `data-test="update-notifications-button"` on the save button (already specified above)
         - The save button and success transition, following the exact pattern from profile.tsx:
             ```tsx
             <div className="flex items-center gap-4">
@@ -619,10 +629,35 @@ Use these files to complete the task:
     vendor/bin/pint --dirty
     ```
 
-### 4. Validate Complete Implementation
+### 4. Write Browser Tests
+
+- **Task ID**: write-browser-tests
+- **Depends On**: create-frontend-page, write-notification-tests
+- **Assigned To**: notifications-browser-test-dev
+- **Agent Type**: coder
+- **Parallel**: false
+- Create `tests/Browser/Settings/NotificationSettingsTest.php`
+- Write a smoke test for the notification settings page:
+    - Create and authenticate a user
+    - Visit `/settings/notifications`
+    - Assert the page loads successfully with no JavaScript errors
+- Write a dark mode spot check:
+    - Visit the notification settings page, switch to dark color scheme using `colorScheme('dark')`, assert no JavaScript errors
+- Write a notification toggle flow test:
+    - Create and authenticate a user with notifications enabled
+    - Visit the notification settings page
+    - Click the checkbox using `[data-test="email-notifications-checkbox"]` to uncheck it
+    - Click the save button using `[data-test="update-notifications-button"]`
+    - Assert the "Saved" confirmation message appears
+    - Assert no JavaScript errors
+- Use `data-test` selectors for all element interactions
+- Ensure all browser tests use `assertNoJavaScriptErrors()`
+- Run browser tests: `php artisan test tests/Browser/Settings/NotificationSettingsTest.php --compact`
+
+### 5. Validate Complete Implementation
 
 - **Task ID**: validate-all
-- **Depends On**: create-backend-foundation, create-frontend-page, write-notification-tests
+- **Depends On**: create-backend-foundation, create-frontend-page, write-notification-tests, write-browser-tests
 - **Assigned To**: notifications-reviewer
 - **Agent Type**: reviewer
 - **Parallel**: false
@@ -648,6 +683,8 @@ Use these files to complete the task:
 - Verify the notifications page has a checkbox toggle for email notifications
 - Verify the form submits via PATCH to the update route
 - Verify the success feedback ("Saved") transition works
+- Run browser tests: `php artisan test tests/Browser/Settings/NotificationSettingsTest.php --compact`
+- Verify `data-test` attributes exist on interactive elements in the notification settings page component
 - Confirm all acceptance criteria are met
 
 ## Acceptance Criteria
@@ -671,6 +708,11 @@ Use these files to complete the task:
 - TypeScript types compile without errors
 - ESLint and Prettier checks pass
 - PHP code passes Pint formatting
+- All new pages have smoke tests (no JavaScript errors)
+- Dark mode spot check passes for the notification settings page
+- Notification toggle flow passes browser test using `data-test` selectors
+- Interactive frontend elements have `data-test` attributes
+- All browser tests pass
 
 ## Validation Commands
 
@@ -703,6 +745,9 @@ vendor/bin/pint --dirty
 
 # Verify routes exist
 php artisan route:list --path=settings/notifications
+
+# Run browser tests
+php artisan test tests/Browser/Settings/NotificationSettingsTest.php --compact
 ```
 
 ## Notes

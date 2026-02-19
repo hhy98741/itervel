@@ -141,6 +141,7 @@ Use these files to complete the task:
 
 - `/Users/young/Nextcloud/dev/Itervel/resources/js/components/credit-balance.tsx` -- A reusable React component that displays the user's credit balance with a coin icon and tooltip. Accepts `credits` (number) and optional `compact` (boolean) props.
 - `/Users/young/Nextcloud/dev/Itervel/tests/Feature/CreditBalanceDisplayTest.php` -- Feature test that verifies the `video_credits` field is shared via Inertia on authenticated pages.
+- `/Users/young/Nextcloud/dev/Itervel/tests/Browser/CreditBalanceDisplayTest.php` -- Pest browser tests: smoke test for dashboard with credit balance visible, dark mode spot check, and verification that credit balance renders in both sidebar and header layouts using `data-test` selectors.
 
 ## Team Orchestration
 
@@ -160,6 +161,12 @@ Use these files to complete the task:
 - Test Developer
     - Name: credit-balance-test-dev
     - Role: Writes feature tests to verify credit balance data is available in Inertia shared props for authenticated users
+    - Agent Type: coder
+    - Resume: false
+
+- Browser Test Developer
+    - Name: credit-balance-browser-test-dev
+    - Role: Writes Pest browser tests (smoke tests, dark mode checks, interactive flow tests) for the credit balance display in both sidebar and header layouts
     - Agent Type: coder
     - Resume: false
 
@@ -192,6 +199,9 @@ Use these files to complete the task:
         - Style the icon with `text-muted-foreground` for subtle appearance, `shrink-0` to prevent icon compression
         - The `TooltipContent` should show `"{credits} credit(s) remaining"` with proper pluralization
     - The component should be clean and minimal, following the patterns in sibling components like `user-info.tsx`
+- Add `data-test` attributes to interactive elements for browser testing:
+    - `data-test="credit-balance"` on the outermost wrapper `div` of the `CreditBalance` component
+    - `data-test="credit-balance-count"` on the `span` displaying the numeric credit count
 - Integrate into `/Users/young/Nextcloud/dev/Itervel/resources/js/components/app-header.tsx`:
     - Import `CreditBalance` from `@/components/credit-balance`
     - Add the credit balance display in the `ml-auto flex items-center space-x-2` div (line 179), before the search button and right nav items
@@ -294,10 +304,37 @@ Use these files to complete the task:
 - Ensure all tests pass
 - Run `vendor/bin/pint --dirty` to fix any PHP formatting issues
 
-### 3. Validate Complete Implementation
+### 3. Write Browser Tests
+
+- **Task ID**: write-browser-tests
+- **Depends On**: create-credit-balance-component, write-credit-balance-tests
+- **Assigned To**: credit-balance-browser-test-dev
+- **Agent Type**: coder
+- **Parallel**: false
+- Create `tests/Browser/CreditBalanceDisplayTest.php`
+- Write a smoke test for the dashboard page:
+    - Create a user with `video_credits => 5`, act as that user
+    - Visit the dashboard route
+    - Assert the page loads successfully with no JavaScript errors
+    - Assert `[data-test="credit-balance"]` is visible on the page
+    - Assert `[data-test="credit-balance-count"]` contains the text "5"
+- Write a dark mode spot check for the dashboard:
+    - Create a user with `video_credits => 3`, act as that user
+    - Visit the dashboard, assert no JavaScript errors
+    - Switch to dark color scheme, assert no JavaScript errors
+- Write a test that credit balance shows zero for users with no credits:
+    - Create a user with `video_credits => 0`, act as that user
+    - Visit the dashboard
+    - Assert `[data-test="credit-balance-count"]` contains the text "0"
+    - Assert no JavaScript errors
+- Use `data-test` selectors for all element interactions (never CSS classes or text content for targeting)
+- Ensure all browser tests use `assertNoJavaScriptErrors()`
+- Run browser tests: `php artisan test tests/Browser/CreditBalanceDisplayTest.php --compact`
+
+### 4. Validate Complete Implementation
 
 - **Task ID**: validate-all
-- **Depends On**: create-credit-balance-component, write-credit-balance-tests
+- **Depends On**: create-credit-balance-component, write-credit-balance-tests, write-browser-tests
 - **Assigned To**: credit-balance-reviewer
 - **Agent Type**: reviewer
 - **Parallel**: false
@@ -315,6 +352,8 @@ Use these files to complete the task:
 - Verify the credit balance is positioned in the header before the user avatar dropdown
 - Verify the credit balance in the sidebar handles the collapsed state (shows only icon when collapsed)
 - Verify the `CreditBalance` component has a tooltip showing the credit count with proper pluralization
+- Run browser tests: `php artisan test tests/Browser/CreditBalanceDisplayTest.php --compact`
+- Verify `data-test` attributes exist on interactive elements in the `CreditBalance` component (`data-test="credit-balance"`, `data-test="credit-balance-count"`)
 - Confirm all acceptance criteria are met
 
 ## Acceptance Criteria
@@ -333,6 +372,11 @@ Use these files to complete the task:
 - TypeScript types compile without errors
 - ESLint and Prettier checks pass
 - PHP code passes Pint formatting
+- All new pages have smoke tests (no JavaScript errors)
+- Dark mode spot check passes for the dashboard page
+- Credit balance display is verified via browser tests using `data-test` selectors
+- Interactive frontend elements have `data-test` attributes
+- All browser tests pass
 
 ## Validation Commands
 
@@ -359,6 +403,9 @@ npm run format:check
 
 # PHP code formatting
 vendor/bin/pint --dirty
+
+# Run browser tests
+php artisan test tests/Browser/CreditBalanceDisplayTest.php --compact
 ```
 
 ## Notes

@@ -278,6 +278,7 @@ Use these files to complete the task:
 - `resources/js/types/project.ts` -- TypeScript type definition for the Project model.
 - `resources/js/components/ui/textarea.tsx` -- Textarea UI component following the existing Input pattern.
 - `tests/Feature/ProjectTest.php` -- Pest feature tests for project creation.
+- `tests/Browser/ProjectTest.php` -- Pest browser tests: smoke test for projects index and create pages, dark mode spot check, and core project creation flow test using `data-test` selectors.
 
 ## Team Orchestration
 
@@ -310,6 +311,12 @@ Use these files to complete the task:
     - Name: project-reviewer
     - Role: Validates the complete feature against acceptance criteria, runs all tests, checks TypeScript types, runs linting and formatting
     - Agent Type: reviewer
+    - Resume: false
+
+- Browser Test Developer
+    - Name: project-browser-test-dev
+    - Role: Writes Pest browser tests (smoke tests, dark mode checks, interactive flow tests) for the projects index and create pages
+    - Agent Type: coder
     - Resume: false
 
 ## Step by Step Tasks
@@ -436,6 +443,10 @@ Use these files to complete the task:
     - If `canCreateProject` is true, show a "New Project" button linking to the create page
     - If no projects exist, show an empty state with a message like "No projects yet" and a "Create your first project" button
     - Map projects into Card components showing name, target_audience, tone, and speaking_pace
+    - Add `data-test` attributes to interactive elements for browser testing:
+        - `data-test="new-project-button"` on the "New Project" button
+        - `data-test="create-first-project-button"` on the empty state "Create your first project" button
+        - `data-test="project-card"` on each project Card component
 - Create `/Users/young/Nextcloud/dev/Itervel/resources/js/pages/projects/create.tsx`:
     - Import `Form`, `Head` from `@inertiajs/react`
     - Import `AppLayout` from `@/layouts/app-layout`
@@ -457,6 +468,13 @@ Use these files to complete the task:
     - Show InputError under each field for validation errors
     - Submit button says "Create Project" and is disabled during processing
     - Include a "Cancel" link back to projects index
+    - Add `data-test` attributes to interactive elements for browser testing:
+        - `data-test="project-name-input"` on the Name input field
+        - `data-test="target-audience-input"` on the Target Audience textarea field
+        - `data-test="tone-input"` on the Tone input field
+        - `data-test="speaking-pace-input"` on the Speaking Pace input field
+        - `data-test="submit-project-button"` on the "Create Project" submit button
+        - `data-test="cancel-button"` on the Cancel link
 - Edit `/Users/young/Nextcloud/dev/Itervel/resources/js/components/app-sidebar.tsx`:
     - Add `import { FolderKanban } from 'lucide-react'` (or another appropriate icon like `Layers` or `FolderOpen`)
     - Import the Wayfinder route for projects index (will be available as `@/routes/projects` after Wayfinder generates)
@@ -708,10 +726,37 @@ Use these files to complete the task:
 - Fix any failing tests until all pass
 - Run `vendor/bin/pint --dirty` to fix formatting
 
-### 4. Validate Complete Implementation
+### 4. Write Browser Tests
+
+- **Task ID**: write-browser-tests
+- **Depends On**: create-frontend-pages, create-backend-foundation
+- **Assigned To**: project-browser-test-dev
+- **Agent Type**: coder
+- **Parallel**: false
+- Create `tests/Browser/ProjectTest.php`
+- Write smoke tests for each new page route:
+    - Visit `/projects` as an authenticated user, assert no JavaScript errors
+    - Visit `/projects/create` as an authenticated user, assert no JavaScript errors
+- Write a dark mode spot check for the projects index page:
+    - Visit `/projects`, switch to dark color scheme, assert no JavaScript errors
+- Write an interactive flow test for creating a project:
+    - Visit `/projects`, click `[data-test="new-project-button"]`
+    - Fill in `[data-test="project-name-input"]` with a project name
+    - Fill in `[data-test="target-audience-input"]` with a target audience
+    - Fill in `[data-test="tone-input"]` with a tone
+    - Fill in `[data-test="speaking-pace-input"]` with a speaking pace value
+    - Click `[data-test="submit-project-button"]`
+    - Assert redirected to projects index and the new project appears
+- Write an empty state test:
+    - Visit `/projects` with no projects, assert `[data-test="create-first-project-button"]` is visible
+- Use `data-test` selectors for all element interactions
+- Ensure all browser tests use `assertNoJavaScriptErrors()`
+- Run browser tests: `php artisan test tests/Browser/ProjectTest.php --compact`
+
+### 5. Validate Complete Implementation
 
 - **Task ID**: validate-all
-- **Depends On**: create-backend-foundation, create-frontend-pages, write-project-tests
+- **Depends On**: create-backend-foundation, create-frontend-pages, write-project-tests, write-browser-tests
 - **Assigned To**: project-reviewer
 - **Agent Type**: reviewer
 - **Parallel**: false
@@ -736,6 +781,8 @@ Use these files to complete the task:
     - `resources/js/types/project.ts` has Project type definition
     - `resources/js/components/app-sidebar.tsx` has Projects nav item
     - Routes are correctly defined: `projects.index`, `projects.create`, `projects.store`
+- Run browser tests: `php artisan test tests/Browser/ProjectTest.php --compact`
+- Verify `data-test` attributes exist on interactive elements in `resources/js/pages/projects/index.tsx` and `resources/js/pages/projects/create.tsx`
 - Verify routes exist: `php artisan route:list --name=projects`
 - Confirm all acceptance criteria are met
 
@@ -759,6 +806,11 @@ Use these files to complete the task:
 - All existing tests continue to pass (no regressions)
 - PHP code passes Pint formatting
 - TypeScript passes type checking
+- All new pages have smoke tests (no JavaScript errors)
+- Dark mode spot check passes for the projects index page
+- Core project creation flow passes browser tests using `data-test` selectors
+- Interactive frontend elements have `data-test` attributes
+- All browser tests pass
 - ESLint reports no errors
 
 ## Validation Commands
@@ -783,6 +835,9 @@ npm run lint
 
 # PHP code formatting
 vendor/bin/pint --dirty
+
+# Run browser tests
+php artisan test tests/Browser/ProjectTest.php --compact
 ```
 
 ## Notes

@@ -231,6 +231,7 @@ Use these files to complete the task:
 - `/Users/young/Nextcloud/dev/Itervel/resources/js/components/insufficient-credits-dialog.tsx` -- A reusable React dialog component that opens when a user with 0 credits attempts a credit-gated action. Uses the render props pattern to provide `disabled` and `onClick` props to the child element. Displays a dialog explaining the need for credits with a CTA to purchase.
 - `/Users/young/Nextcloud/dev/Itervel/resources/js/hooks/use-credits-gate.ts` -- A React hook that encapsulates credit checking logic. Returns `credits`, `hasCredits`, and `hasSufficientCredits()` for use in any component that needs to gate actions behind credit availability.
 - `/Users/young/Nextcloud/dev/Itervel/tests/Feature/Credits/InsufficientCreditsTest.php` -- Pest feature tests for the `EnsureSufficientCredits` middleware. Tests that users with 0 credits are blocked, users with credits are allowed, and the correct response type (Inertia redirect vs JSON 403) is returned.
+- `/Users/young/Nextcloud/dev/Itervel/tests/Browser/InsufficientCreditsDialogTest.php` -- Pest browser tests: smoke test for dashboard loading with 0 credits, dark mode spot check, and interactive flow test verifying the InsufficientCreditsDialog opens when a credit-gated action is triggered by a user with 0 credits.
 
 ## Team Orchestration
 
@@ -256,6 +257,12 @@ Use these files to complete the task:
 - Test Developer
     - Name: credits-block-test-dev
     - Role: Writes feature tests for the EnsureSufficientCredits middleware covering all scenarios (0 credits blocked, positive credits allowed, Inertia vs JSON responses, unauthenticated users)
+    - Agent Type: coder
+    - Resume: false
+
+- Browser Test Developer
+    - Name: credits-block-browser-test-dev
+    - Role: Writes Pest browser tests (smoke tests, dark mode checks, interactive flow tests) for the InsufficientCreditsDialog component
     - Agent Type: coder
     - Resume: false
 
@@ -343,6 +350,10 @@ Use these files to complete the task:
                 - `Button variant="outline"` with `onClick={() => setOpen(false)}` text "Cancel"
                 - `Button asChild` wrapping `Link href={purchaseUrl}` text "Purchase Credits" (default `purchaseUrl` is `'#'`)
     - The component follows the dialog pattern from `delete-user.tsx` but uses the render props pattern for flexibility (the parent component controls the trigger element)
+- Add `data-test` attributes to interactive elements for browser testing:
+    - `data-test="insufficient-credits-dialog"` on the `DialogContent` wrapper
+    - `data-test="insufficient-credits-cancel"` on the Cancel button
+    - `data-test="insufficient-credits-purchase"` on the "Purchase Credits" link/button
 - Run `npm run types` to verify TypeScript types compile correctly
 - Run `npm run lint:fix` to fix any linting issues
 - Run `npm run format` to format with Prettier
@@ -456,10 +467,34 @@ Use these files to complete the task:
 - Ensure all tests pass
 - Run `vendor/bin/pint --dirty` to fix any PHP formatting issues
 
-### 4. Validate Complete Implementation
+### 4. Write Browser Tests
+
+- **Task ID**: write-browser-tests
+- **Depends On**: create-middleware, create-frontend-components, write-credits-block-tests
+- **Assigned To**: credits-block-browser-test-dev
+- **Agent Type**: coder
+- **Parallel**: false
+- Create `tests/Browser/InsufficientCreditsDialogTest.php`
+- Since the InsufficientCreditsDialog is a reusable component that will be consumed by downstream features (video creation wizard), and no page currently renders it, create a minimal test page for browser testing:
+    - Create a temporary test route in the test file's `beforeEach` that renders a simple Inertia page with a button wrapped in the `InsufficientCreditsDialog` component
+    - Alternatively, write smoke tests against the dashboard (which is accessible to users with 0 credits) to verify the page loads without JavaScript errors
+- Write a smoke test for the dashboard with a 0-credit user:
+    - Create a user with `video_credits => 0`, act as that user
+    - Visit the dashboard route
+    - Assert the page loads successfully with no JavaScript errors
+- Write a dark mode spot check for the dashboard:
+    - Create a user with `video_credits => 0`, act as that user
+    - Visit the dashboard, assert no JavaScript errors
+    - Switch to dark color scheme, assert no JavaScript errors
+- Note: Full interactive dialog tests (opening the dialog, clicking Cancel/Purchase Credits) will be added when video creation pages are built that use the `InsufficientCreditsDialog` component. For now, the browser tests focus on smoke testing and ensuring no JS errors for 0-credit users.
+- Use `data-test` selectors for all element interactions (never CSS classes or text content for targeting)
+- Ensure all browser tests use `assertNoJavaScriptErrors()`
+- Run browser tests: `php artisan test tests/Browser/InsufficientCreditsDialogTest.php --compact`
+
+### 5. Validate Complete Implementation
 
 - **Task ID**: validate-all
-- **Depends On**: create-middleware, create-frontend-components, write-credits-block-tests
+- **Depends On**: create-middleware, create-frontend-components, write-credits-block-tests, write-browser-tests
 - **Assigned To**: credits-block-reviewer
 - **Agent Type**: reviewer
 - **Parallel**: false
@@ -492,6 +527,8 @@ Use these files to complete the task:
 - Run ESLint: `npm run lint`
 - Run Prettier formatting check: `npm run format:check`
 - Run PHP formatting: `vendor/bin/pint --dirty`
+- Run browser tests: `php artisan test tests/Browser/InsufficientCreditsDialogTest.php --compact`
+- Verify `data-test` attributes exist on interactive elements in the `InsufficientCreditsDialog` component (`data-test="insufficient-credits-dialog"`, `data-test="insufficient-credits-cancel"`, `data-test="insufficient-credits-purchase"`)
 - Confirm all acceptance criteria are met
 
 ## Acceptance Criteria
@@ -512,6 +549,10 @@ Use these files to complete the task:
 - TypeScript types compile without errors
 - ESLint and Prettier checks pass
 - PHP code passes Pint formatting
+- All new pages have smoke tests (no JavaScript errors)
+- Dark mode spot check passes for the dashboard with 0-credit user
+- Interactive frontend elements have `data-test` attributes
+- All browser tests pass
 
 ## Validation Commands
 
@@ -541,6 +582,9 @@ npm run format:check
 
 # PHP code formatting
 vendor/bin/pint --dirty
+
+# Run browser tests
+php artisan test tests/Browser/InsufficientCreditsDialogTest.php --compact
 ```
 
 ## Notes

@@ -149,6 +149,7 @@ Use these files to complete the task:
 - `app/Http/Requests/UpdateProjectRequest.php` -- Form Request with ownership authorization (`authorize()` checks `user_id` matches authenticated user) and validation rules matching the store request (name required, optional target_audience, tone, speaking_pace with integer range 80-300).
 - `resources/js/pages/projects/edit.tsx` -- Inertia React page component with a pre-populated form for editing project settings. Uses `<Form>` with Wayfinder-generated `ProjectController.update.form()`, shows validation errors, and provides "Saved" feedback on success.
 - `tests/Feature/ProjectUpdateTest.php` -- Pest feature tests covering edit page display, authorization (ownership), validation, successful updates, and redirect behavior.
+- `tests/Browser/ProjectUpdateTest.php` -- Pest browser tests: smoke test for the project edit page, dark mode spot check, and edit form submission flow test using `data-test` selectors.
 
 ## Team Orchestration
 
@@ -181,6 +182,12 @@ Use these files to complete the task:
     - Name: edit-project-reviewer
     - Role: Validates the complete feature against acceptance criteria, runs all tests, checks TypeScript types, runs linting and formatting
     - Agent Type: reviewer
+    - Resume: false
+
+- Browser Test Developer
+    - Name: edit-project-browser-test-dev
+    - Role: Writes Pest browser tests (smoke tests, dark mode checks, interactive flow tests) for the project edit page and edit form
+    - Agent Type: coder
     - Resume: false
 
 ## Step by Step Tasks
@@ -403,6 +410,12 @@ Use these files to complete the task:
     }
     ```
 
+- Add `data-test` attributes to interactive elements for browser testing:
+    - `data-test="project-name-input"` on the Name input field
+    - `data-test="target-audience-input"` on the Target Audience input field
+    - `data-test="tone-input"` on the Tone input field
+    - `data-test="speaking-pace-input"` on the Speaking Pace input field
+    - `data-test="save-changes-button"` on the "Save changes" submit button
 - The actual Wayfinder import paths may vary. After running `npm run build`, check the generated files in `resources/js/actions/App/Http/Controllers/ProjectController/` and `resources/js/routes/projects/` to confirm the correct import paths. Adjust imports accordingly.
 - Note: The `Form` Wayfinder integration for `update` requires the project parameter for the route. Check how the Wayfinder-generated function handles route parameters (e.g., `ProjectController.update.form({ project: project.id })` or `ProjectController.update.form(project.id)`). Follow the pattern from the generated file.
 - Edit `/Users/young/Nextcloud/dev/Itervel/resources/js/pages/projects/index.tsx` to add an "Edit" link to each project card:
@@ -417,6 +430,8 @@ Use these files to complete the task:
             </Button>
         </Link>
         ```
+- Add `data-test` attributes to interactive elements for browser testing:
+    - `data-test="edit-project-link"` on each project card's "Edit" link/button
 - Run `npm run build` to compile assets and verify Wayfinder route generation
 - Run `npm run types` to verify no TypeScript errors
 - Run `npm run lint` and `npm run format` to fix any linting/formatting issues
@@ -674,10 +689,37 @@ Use these files to complete the task:
 - Fix any failing tests until all pass
 - Run `vendor/bin/pint --dirty` to format the test file
 
-### 4. Validate Complete Implementation
+### 4. Write Browser Tests
+
+- **Task ID**: write-browser-tests
+- **Depends On**: create-frontend-edit-page, create-backend-edit-update
+- **Assigned To**: edit-project-browser-test-dev
+- **Agent Type**: coder
+- **Parallel**: false
+- Create `tests/Browser/ProjectUpdateTest.php`
+- Write a smoke test for the project edit page:
+    - Create a user with a project, visit `/projects/{project}/edit`, assert no JavaScript errors
+- Write a dark mode spot check for the edit page:
+    - Visit the edit page, switch to dark color scheme, assert no JavaScript errors
+- Write an interactive flow test for editing a project:
+    - Visit `/projects/{project}/edit`
+    - Clear and fill `[data-test="project-name-input"]` with a new name
+    - Clear and fill `[data-test="target-audience-input"]` with a new audience
+    - Clear and fill `[data-test="tone-input"]` with a new tone
+    - Clear and fill `[data-test="speaking-pace-input"]` with a new pace
+    - Click `[data-test="save-changes-button"]`
+    - Assert the page shows "Saved" confirmation
+- Write a flow test for navigating from index to edit:
+    - Visit `/projects`, click `[data-test="edit-project-link"]`
+    - Assert navigated to the edit page with the project form pre-populated
+- Use `data-test` selectors for all element interactions
+- Ensure all browser tests use `assertNoJavaScriptErrors()`
+- Run browser tests: `php artisan test tests/Browser/ProjectUpdateTest.php --compact`
+
+### 5. Validate Complete Implementation
 
 - **Task ID**: validate-all
-- **Depends On**: create-backend-edit-update, create-frontend-edit-page, write-edit-tests
+- **Depends On**: create-backend-edit-update, create-frontend-edit-page, write-edit-tests, write-browser-tests
 - **Assigned To**: edit-project-reviewer
 - **Agent Type**: reviewer
 - **Parallel**: false
@@ -695,6 +737,8 @@ Use these files to complete the task:
     - `resources/js/pages/projects/edit.tsx` renders a pre-populated form with all project fields
     - `resources/js/pages/projects/index.tsx` has edit links on each project card
     - `tests/Feature/ProjectUpdateTest.php` has comprehensive tests covering authorization, validation, and successful updates
+- Run browser tests: `php artisan test tests/Browser/ProjectUpdateTest.php --compact`
+- Verify `data-test` attributes exist on interactive elements in `resources/js/pages/projects/edit.tsx` and `resources/js/pages/projects/index.tsx`
 - Confirm all acceptance criteria are met
 
 ## Acceptance Criteria
@@ -715,6 +759,11 @@ Use these files to complete the task:
 - All existing tests continue to pass (no regressions)
 - PHP code passes Pint formatting
 - TypeScript passes type checking
+- All new pages have smoke tests (no JavaScript errors)
+- Dark mode spot check passes for the project edit page
+- Core project editing flow passes browser tests using `data-test` selectors
+- Interactive frontend elements have `data-test` attributes
+- All browser tests pass
 - ESLint reports no errors
 
 ## Validation Commands
@@ -742,6 +791,9 @@ npm run lint
 
 # PHP code formatting
 vendor/bin/pint --dirty
+
+# Run browser tests
+php artisan test tests/Browser/ProjectUpdateTest.php --compact
 ```
 
 ## Notes

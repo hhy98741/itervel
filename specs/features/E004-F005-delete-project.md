@@ -159,6 +159,7 @@ Use these files to complete the task:
 - `app/Http/Requests/DeleteProjectRequest.php` -- Form Request with ownership authorization (`authorize()` checks `user_id` matches authenticated user) and validation requiring the `project_name` field to exactly match the project's actual name. Uses `withValidator()` with `after()` callback for the name comparison.
 - `resources/js/components/delete-project.tsx` -- React component rendering a delete project warning section and confirmation dialog. Follows the exact pattern of `delete-user.tsx` but replaces password confirmation with project name confirmation. Accepts a `project` prop (with `id` and `name`). Uses Inertia `<Form>` with Wayfinder-generated `ProjectController.destroy.form()`. Shows a text input where the user must type the project name, with the delete button disabled until the typed name matches.
 - `tests/Feature/ProjectDeleteTest.php` -- Pest feature tests covering guest redirect, owner deletion, non-owner 403, project name confirmation validation, successful deletion and redirect, and isolation from other projects.
+- `tests/Browser/ProjectDeleteTest.php` -- Pest browser tests: smoke test for the delete section on the edit page, dark mode spot check, and delete confirmation dialog flow test using `data-test` selectors.
 
 ## Team Orchestration
 
@@ -191,6 +192,12 @@ Use these files to complete the task:
     - Name: delete-project-reviewer
     - Role: Validates the complete feature against acceptance criteria, runs all tests, checks TypeScript types, runs linting and formatting
     - Agent Type: reviewer
+    - Resume: false
+
+- Browser Test Developer
+    - Name: delete-project-browser-test-dev
+    - Role: Writes Pest browser tests (smoke tests, dark mode checks, interactive flow tests) for the project delete confirmation dialog
+    - Agent Type: coder
     - Resume: false
 
 ## Step by Step Tasks
@@ -423,6 +430,11 @@ Use these files to complete the task:
     ```
 
 - Note: The `Form` component uses `value` and `onChange` (controlled input) instead of `defaultValue` because the component needs to track the typed value in `useState` for client-side comparison to enable/disable the delete button. The actual form submission sends the input's `name="project_name"` value to the server.
+- Add `data-test` attributes to interactive elements for browser testing:
+    - `data-test="delete-project-trigger"` on the "Delete project" button that opens the dialog
+    - `data-test="delete-confirm-input"` on the project name confirmation input field
+    - `data-test="delete-confirm-submit"` on the "Delete project" submit button inside the dialog
+    - `data-test="delete-cancel-button"` on the "Cancel" button inside the dialog
 - Note: The actual Wayfinder import path for `ProjectController.destroy.form()` may vary. After running `npm run build`, check the generated files in `resources/js/actions/App/Http/Controllers/ProjectController/` to confirm the correct import path. The destroy method needs the project parameter for the route URL (e.g., `ProjectController.destroy.form({ project: project.id })`). Adjust the import accordingly.
 - Edit `/Users/young/Nextcloud/dev/Itervel/resources/js/pages/projects/edit.tsx` (created by E001-F013) to integrate the delete component:
     - Import `DeleteProject` from `@/components/delete-project`
@@ -602,10 +614,40 @@ Use these files to complete the task:
 - Fix any failing tests until all pass
 - Run `vendor/bin/pint --dirty` to format the test file
 
-### 4. Validate Complete Implementation
+### 4. Write Browser Tests
+
+- **Task ID**: write-browser-tests
+- **Depends On**: create-frontend-delete, create-backend-destroy
+- **Assigned To**: delete-project-browser-test-dev
+- **Agent Type**: coder
+- **Parallel**: false
+- Create `tests/Browser/ProjectDeleteTest.php`
+- Write a smoke test for the edit page with delete section:
+    - Create a user with a project, visit `/projects/{project}/edit`, assert no JavaScript errors
+    - Assert `[data-test="delete-project-trigger"]` is visible
+- Write a dark mode spot check for the edit page with delete section:
+    - Visit the edit page, switch to dark color scheme, assert no JavaScript errors
+- Write an interactive flow test for the delete confirmation dialog:
+    - Visit `/projects/{project}/edit`
+    - Click `[data-test="delete-project-trigger"]` to open the dialog
+    - Assert the dialog is visible with the project name
+    - Assert `[data-test="delete-confirm-submit"]` is disabled (name not yet typed)
+    - Type the project name into `[data-test="delete-confirm-input"]`
+    - Assert `[data-test="delete-confirm-submit"]` becomes enabled
+    - Click `[data-test="delete-confirm-submit"]`
+    - Assert redirected to `/projects`
+- Write a cancel flow test:
+    - Click `[data-test="delete-project-trigger"]` to open the dialog
+    - Click `[data-test="delete-cancel-button"]`
+    - Assert the dialog closes and the project still exists
+- Use `data-test` selectors for all element interactions
+- Ensure all browser tests use `assertNoJavaScriptErrors()`
+- Run browser tests: `php artisan test tests/Browser/ProjectDeleteTest.php --compact`
+
+### 5. Validate Complete Implementation
 
 - **Task ID**: validate-all
-- **Depends On**: create-backend-destroy, create-frontend-delete, write-delete-tests
+- **Depends On**: create-backend-destroy, create-frontend-delete, write-delete-tests, write-browser-tests
 - **Assigned To**: delete-project-reviewer
 - **Agent Type**: reviewer
 - **Parallel**: false
@@ -624,6 +666,8 @@ Use these files to complete the task:
     - `resources/js/components/delete-project.tsx` exists with Dialog confirmation, project name input, and Wayfinder Form integration
     - `resources/js/pages/projects/edit.tsx` renders the `<DeleteProject />` component below the edit form
     - `tests/Feature/ProjectDeleteTest.php` has comprehensive tests covering all scenarios
+- Run browser tests: `php artisan test tests/Browser/ProjectDeleteTest.php --compact`
+- Verify `data-test` attributes exist on interactive elements in `resources/js/components/delete-project.tsx`
 - Confirm all acceptance criteria are met
 
 ## Acceptance Criteria
@@ -645,6 +689,11 @@ Use these files to complete the task:
 - All existing tests continue to pass (no regressions)
 - PHP code passes Pint formatting
 - TypeScript passes type checking
+- All new pages/components have smoke tests (no JavaScript errors)
+- Dark mode spot check passes for the edit page with delete section
+- Delete confirmation dialog flow passes browser tests using `data-test` selectors
+- Interactive frontend elements have `data-test` attributes
+- All browser tests pass
 - ESLint reports no errors
 
 ## Validation Commands
@@ -675,6 +724,9 @@ npm run lint
 
 # PHP code formatting
 vendor/bin/pint --dirty
+
+# Run browser tests
+php artisan test tests/Browser/ProjectDeleteTest.php --compact
 ```
 
 ## Notes

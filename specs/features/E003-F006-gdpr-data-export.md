@@ -344,6 +344,7 @@ Use these files to complete the task:
 - `/Users/young/Nextcloud/dev/Itervel/app/Jobs/GenerateDataExport.php` -- Queued job that collects all user data, assembles it into a JSON structure, packages it as a ZIP archive, and stores it in the user's private storage directory. Created via `php artisan make:job GenerateDataExport`.
 - `/Users/young/Nextcloud/dev/Itervel/app/Http/Controllers/Settings/DataExportController.php` -- Controller with `store()` (request new export) and `download()` (download completed export) methods. Created via `php artisan make:controller Settings/DataExportController`.
 - `/Users/young/Nextcloud/dev/Itervel/tests/Feature/Settings/DataExportTest.php` -- Pest feature tests for the data export feature. Tests request creation, rate limiting, download authorization, job execution, and edge cases. Created via `php artisan make:test Settings/DataExportTest --pest`.
+- `tests/Browser/Settings/DataExportTest.php` -- Pest browser tests: smoke test for the account page with data export section, dark mode spot check, and data export request flow test using `data-test` selectors.
 
 ## Team Orchestration
 
@@ -369,6 +370,12 @@ Use these files to complete the task:
 - Test Developer
     - Name: gdpr-test-dev
     - Role: Writes comprehensive Pest feature tests for the data export endpoints, job execution, authorization, rate limiting, and edge cases.
+    - Agent Type: coder
+    - Resume: false
+
+- Browser Test Developer
+    - Name: gdpr-browser-test-dev
+    - Role: Writes Pest browser tests (smoke test, dark mode check, data export request flow) for the data export section on the account page
     - Agent Type: coder
     - Resume: false
 
@@ -897,6 +904,11 @@ Use these files to complete the task:
     }
     ```
 
+    - Add `data-test` attributes to interactive elements for browser testing:
+        - `data-test="request-data-export-button"` on the "Request data export" submit button
+        - `data-test="download-export-button"` on the "Download export" button/link
+        - `data-test="export-status-badge"` on the export status Badge
+        - `data-test="export-requested-message"` on the success message paragraph
     - Note: The exact Wayfinder import paths may differ. Check the generated files in `resources/js/actions/` and `resources/js/routes/` after the backend build step
     - The component displays the export status using Badge variants: `secondary` for pending/processing, `default` for completed, `destructive` for failed
     - When an export is pending or processing, the request button is disabled and shows a spinner
@@ -1228,10 +1240,35 @@ Use these files to complete the task:
 - If any tests fail, debug and fix until all pass
 - Run `vendor/bin/pint --dirty` to fix any formatting issues
 
-### 6. Validate Complete Implementation
+### 6. Write Browser Tests
+
+- **Task ID**: write-browser-tests
+- **Depends On**: create-frontend-export-section, write-export-tests
+- **Assigned To**: gdpr-browser-test-dev
+- **Agent Type**: coder
+- **Parallel**: false
+- Create `tests/Browser/Settings/DataExportTest.php`
+- Write a smoke test for the account page with data export section:
+    - Create and authenticate a verified user
+    - Visit `/settings/account`
+    - Assert the page loads successfully with no JavaScript errors
+    - Assert the data export section is visible
+- Write a dark mode spot check:
+    - Visit the account page, switch to dark color scheme using `colorScheme('dark')`, assert no JavaScript errors
+- Write a data export request flow test:
+    - Create and authenticate a verified user
+    - Visit the account page
+    - Click the request button using `[data-test="request-data-export-button"]`
+    - Assert the success message appears using `[data-test="export-requested-message"]`
+    - Assert no JavaScript errors
+- Use `data-test` selectors for all element interactions
+- Ensure all browser tests use `assertNoJavaScriptErrors()`
+- Run browser tests: `php artisan test tests/Browser/Settings/DataExportTest.php --compact`
+
+### 7. Validate Complete Implementation
 
 - **Task ID**: validate-all
-- **Depends On**: create-data-export-model, create-export-job, create-export-controller, create-frontend-export-section, write-export-tests
+- **Depends On**: create-data-export-model, create-export-job, create-export-controller, create-frontend-export-section, write-export-tests, write-browser-tests
 - **Assigned To**: gdpr-reviewer
 - **Agent Type**: reviewer
 - **Parallel**: false
@@ -1247,6 +1284,8 @@ Use these files to complete the task:
 - Verify the `AccountController::show()` method passes `latestExport` as a prop
 - Verify the `DataExportSection` component exists and is rendered on the account page
 - Verify the frontend shows the request button, status display, and download link appropriately
+- Run browser tests: `php artisan test tests/Browser/Settings/DataExportTest.php --compact`
+- Verify `data-test` attributes exist on interactive elements in the data export section component
 - Run all data export tests: `php artisan test tests/Feature/Settings/DataExportTest.php --compact`
 - Run all settings tests: `php artisan test tests/Feature/Settings --compact`
 - Run all auth tests for regression check: `php artisan test tests/Feature/Auth --compact`
@@ -1284,6 +1323,11 @@ Use these files to complete the task:
 - ESLint and Prettier checks pass
 - PHP code passes Pint formatting
 - Data exports are automatically deleted when the user is deleted (cascade on delete)
+- The account page (with data export section) has a smoke test (no JavaScript errors)
+- Dark mode spot check passes for the account page
+- Data export request flow passes browser test using `data-test` selectors
+- Interactive frontend elements have `data-test` attributes
+- All browser tests pass
 
 ## Validation Commands
 
@@ -1310,6 +1354,9 @@ npm run lint
 
 # Prettier formatting check
 npm run format
+
+# Run browser tests
+php artisan test tests/Browser/Settings/DataExportTest.php --compact
 
 # PHP code formatting
 vendor/bin/pint --dirty

@@ -125,6 +125,8 @@ The existing `delete-user.tsx` component is already fully functional and well-de
 
 No changes are needed to the frontend since the API contract (DELETE `/settings/profile` with a `password` field) remains identical.
 
+Note: The existing `delete-user.tsx` component already has `data-test="delete-user-button"` and `data-test="confirm-delete-user-button"` attributes. A `data-test="delete-password-input"` attribute should be added to the password input field in the confirmation dialog for browser testing.
+
 ### 4. No Route Changes Needed
 
 The existing route in `routes/settings.php` is correct:
@@ -169,6 +171,7 @@ Use these files to complete the task:
 
 - `app/Actions/DeleteUserAccount.php` -- New action class that encapsulates all account deletion logic. Contains a `delete()` method that wraps the entire deletion process in a database transaction: cleans up user files from storage, deletes related records (notifications, tokens, and future model data), and finally deletes the user record itself. This is the single point of responsibility for account deletion across the platform.
 - `tests/Feature/Settings/AccountDeletionTest.php` -- New dedicated test file for comprehensive account deletion tests. Separates deletion tests from profile update tests for better organization. Tests the `DeleteUserAccount` action directly, verifies file cleanup, database transaction behavior, and edge cases. Created via `php artisan make:test Settings/AccountDeletionTest --pest`.
+- `tests/Browser/Settings/AccountDeletionTest.php` -- Pest browser tests: smoke test for the profile page (where delete section lives), dark mode spot check, and account deletion confirmation dialog flow test using existing `data-test` selectors.
 
 ## Team Orchestration
 
@@ -188,6 +191,12 @@ Use these files to complete the task:
 - Test Developer
     - Name: deletion-test-dev
     - Role: Creates a comprehensive test suite for the account deletion feature covering the action class, controller integration, file cleanup, and edge cases
+    - Agent Type: coder
+    - Resume: false
+
+- Browser Test Developer
+    - Name: deletion-browser-test-dev
+    - Role: Writes Pest browser tests (smoke test, dark mode check, deletion dialog flow) for the account deletion feature and adds data-test attribute to the password input
     - Agent Type: coder
     - Resume: false
 
@@ -498,10 +507,35 @@ Use these files to complete the task:
 - Run `vendor/bin/pint --dirty` to fix any formatting issues in the test file
 - If any test fails, debug and fix until all pass
 
-### 3. Validate Complete Implementation
+### 3. Write Browser Tests
+
+- **Task ID**: write-browser-tests
+- **Depends On**: create-delete-action, write-deletion-tests
+- **Assigned To**: deletion-browser-test-dev
+- **Agent Type**: coder
+- **Parallel**: false
+- Add `data-test="delete-password-input"` to the password input field in `/Users/young/Nextcloud/dev/Itervel/resources/js/components/delete-user.tsx`
+- Create `tests/Browser/Settings/AccountDeletionTest.php`
+- Write a smoke test for the profile settings page (where the delete section lives):
+    - Create and authenticate a verified user
+    - Visit `/settings/profile`
+    - Assert the page loads successfully with no JavaScript errors
+- Write a dark mode spot check:
+    - Visit the profile page, switch to dark color scheme using `colorScheme('dark')`, assert no JavaScript errors
+- Write a deletion confirmation dialog flow test:
+    - Create and authenticate a verified user
+    - Visit `/settings/profile`
+    - Click the delete button using `[data-test="delete-user-button"]`
+    - Assert the confirmation dialog appears
+    - Assert no JavaScript errors throughout the flow
+- Use `data-test` selectors for all element interactions
+- Ensure all browser tests use `assertNoJavaScriptErrors()`
+- Run browser tests: `php artisan test tests/Browser/Settings/AccountDeletionTest.php --compact`
+
+### 4. Validate Complete Implementation
 
 - **Task ID**: validate-all
-- **Depends On**: create-delete-action, write-deletion-tests
+- **Depends On**: create-delete-action, write-deletion-tests, write-browser-tests
 - **Assigned To**: deletion-reviewer
 - **Agent Type**: reviewer
 - **Parallel**: false
@@ -514,6 +548,8 @@ Use these files to complete the task:
 - Run the account deletion tests: `php artisan test tests/Feature/Settings/AccountDeletionTest.php --compact`
 - Run the profile update tests: `php artisan test tests/Feature/Settings/ProfileUpdateTest.php --compact`
 - Run all settings tests: `php artisan test tests/Feature/Settings --compact`
+- Run browser tests: `php artisan test tests/Browser/Settings/AccountDeletionTest.php --compact`
+- Verify `data-test` attributes exist on interactive elements in the delete-user component
 - Run the full test suite to verify no regressions: `php artisan test --compact`
 - Run TypeScript type checking: `npm run types`
 - Run ESLint: `npm run lint`
@@ -540,6 +576,11 @@ Use these files to complete the task:
 - The full test suite passes without regressions
 - PHP code passes Pint formatting
 - No changes to frontend files (the existing UI already handles the feature correctly)
+- The profile page (with delete section) has a smoke test (no JavaScript errors)
+- Dark mode spot check passes for the profile page
+- Deletion confirmation dialog flow passes browser test using `data-test` selectors
+- Interactive frontend elements have `data-test` attributes
+- All browser tests pass
 
 ## Validation Commands
 
@@ -563,6 +604,9 @@ npm run types
 
 # ESLint linting
 npm run lint
+
+# Run browser tests
+php artisan test tests/Browser/Settings/AccountDeletionTest.php --compact
 
 # PHP code formatting
 vendor/bin/pint --dirty

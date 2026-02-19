@@ -174,6 +174,7 @@ Use these files to complete the task:
 
 - `/Users/young/Nextcloud/dev/Itervel/resources/js/components/low-balance-warning.tsx` -- A dismissible warning banner component that displays when the user has exactly 1 credit remaining. Uses the Alert UI component with amber/warning styling, includes a "Buy Credits" CTA link and an X dismiss button. Accepts `credits` (number) and optional `purchaseUrl` (string) props.
 - `/Users/young/Nextcloud/dev/Itervel/tests/Feature/LowBalanceWarningTest.php` -- Feature test validating that a user with 1 credit has the correct `video_credits` value in shared Inertia props, confirming the data needed for the frontend warning is available.
+- `/Users/young/Nextcloud/dev/Itervel/tests/Browser/LowBalanceWarningTest.php` -- Pest browser tests: smoke test verifying warning banner appears for users with 1 credit, dark mode spot check, dismiss button interaction test, and verification that banner does not appear for users with 0 or 2+ credits.
 
 ## Team Orchestration
 
@@ -193,6 +194,12 @@ Use these files to complete the task:
 - Test Developer
     - Name: low-balance-test-dev
     - Role: Writes feature tests to verify the low-balance data scenario is correctly shared via Inertia props
+    - Agent Type: coder
+    - Resume: false
+
+- Browser Test Developer
+    - Name: low-balance-browser-test-dev
+    - Role: Writes Pest browser tests (smoke tests, dark mode checks, interactive flow tests) for the low balance warning banner and credit balance warning styling
     - Agent Type: coder
     - Resume: false
 
@@ -244,6 +251,10 @@ Use these files to complete the task:
         - Text: `"You have only 1 credit remaining. Purchase more to keep creating videos."`
         - A `<Button size="sm" variant="outline" asChild className="shrink-0 border-amber-300 text-amber-700 hover:bg-amber-100 dark:border-amber-700 dark:text-amber-300 dark:hover:bg-amber-900">` wrapping `<Link href={purchaseUrl}>Buy Credits</Link>` (default `purchaseUrl` is `'#'`)
     - Include a dismiss button positioned absolute in the top-right corner: `<button onClick={() => setDismissed(true)} className="absolute right-3 top-3 rounded-sm p-0.5 text-amber-500 opacity-70 hover:opacity-100 transition-opacity" aria-label="Dismiss low balance warning"><X className="size-4" /></button>`
+- Add `data-test` attributes to interactive elements for browser testing:
+    - `data-test="low-balance-warning"` on the `Alert` wrapper element
+    - `data-test="low-balance-buy-credits"` on the "Buy Credits" CTA button/link
+    - `data-test="low-balance-dismiss"` on the dismiss (X) button
 - Integrate the `LowBalanceWarning` banner into the sidebar layout at `/Users/young/Nextcloud/dev/Itervel/resources/js/layouts/app/app-sidebar-layout.tsx`:
     - Import `usePage` from `@inertiajs/react`
     - Import `LowBalanceWarning` from `@/components/low-balance-warning`
@@ -329,10 +340,50 @@ Use these files to complete the task:
 - Ensure all tests pass
 - Run `vendor/bin/pint --dirty` to fix any PHP formatting issues
 
-### 3. Validate Complete Implementation
+### 3. Write Browser Tests
+
+- **Task ID**: write-browser-tests
+- **Depends On**: enhance-credit-balance-warning, write-low-balance-tests
+- **Assigned To**: low-balance-browser-test-dev
+- **Agent Type**: coder
+- **Parallel**: false
+- Create `tests/Browser/LowBalanceWarningTest.php`
+- Write a smoke test for the warning banner with 1 credit:
+    - Create a user with `video_credits => 1`, act as that user
+    - Visit the dashboard route
+    - Assert the page loads successfully with no JavaScript errors
+    - Assert `[data-test="low-balance-warning"]` is visible on the page
+    - Assert the warning banner text is visible ("Low Credit Balance")
+- Write a dark mode spot check for the warning banner:
+    - Create a user with `video_credits => 1`, act as that user
+    - Visit the dashboard, assert no JavaScript errors
+    - Switch to dark color scheme, assert no JavaScript errors
+    - Assert `[data-test="low-balance-warning"]` is still visible
+- Write a test that the dismiss button hides the warning:
+    - Create a user with `video_credits => 1`, act as that user
+    - Visit the dashboard
+    - Assert `[data-test="low-balance-warning"]` is visible
+    - Click `[data-test="low-balance-dismiss"]`
+    - Assert `[data-test="low-balance-warning"]` is no longer visible
+    - Assert no JavaScript errors
+- Write a test that the warning does NOT appear for users with 0 credits:
+    - Create a user with `video_credits => 0`, act as that user
+    - Visit the dashboard
+    - Assert `[data-test="low-balance-warning"]` is not present on the page
+    - Assert no JavaScript errors
+- Write a test that the warning does NOT appear for users with 2+ credits:
+    - Create a user with `video_credits => 5`, act as that user
+    - Visit the dashboard
+    - Assert `[data-test="low-balance-warning"]` is not present on the page
+    - Assert no JavaScript errors
+- Use `data-test` selectors for all element interactions (never CSS classes or text content for targeting)
+- Ensure all browser tests use `assertNoJavaScriptErrors()`
+- Run browser tests: `php artisan test tests/Browser/LowBalanceWarningTest.php --compact`
+
+### 4. Validate Complete Implementation
 
 - **Task ID**: validate-all
-- **Depends On**: enhance-credit-balance-warning, write-low-balance-tests
+- **Depends On**: enhance-credit-balance-warning, write-low-balance-tests, write-browser-tests
 - **Assigned To**: low-balance-reviewer
 - **Agent Type**: reviewer
 - **Parallel**: false
@@ -362,6 +413,8 @@ Use these files to complete the task:
 - Run ESLint: `npm run lint`
 - Run Prettier formatting check: `npm run format:check`
 - Run PHP formatting: `vendor/bin/pint --dirty`
+- Run browser tests: `php artisan test tests/Browser/LowBalanceWarningTest.php --compact`
+- Verify `data-test` attributes exist on interactive elements in the `LowBalanceWarning` component (`data-test="low-balance-warning"`, `data-test="low-balance-buy-credits"`, `data-test="low-balance-dismiss"`)
 - Confirm all acceptance criteria are met
 
 ## Acceptance Criteria
@@ -383,6 +436,11 @@ Use these files to complete the task:
 - TypeScript types compile without errors
 - ESLint and Prettier checks pass
 - PHP code passes Pint formatting
+- All new pages have smoke tests (no JavaScript errors)
+- Dark mode spot check passes for the dashboard with low balance warning
+- Core user flows pass browser tests using `data-test` selectors (dismiss banner interaction)
+- Interactive frontend elements have `data-test` attributes
+- All browser tests pass
 
 ## Validation Commands
 
@@ -412,6 +470,9 @@ npm run format:check
 
 # PHP code formatting
 vendor/bin/pint --dirty
+
+# Run browser tests
+php artisan test tests/Browser/LowBalanceWarningTest.php --compact
 ```
 
 ## Notes
