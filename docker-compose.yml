@@ -5,6 +5,8 @@ services:
       dockerfile: Dockerfile
       target: development
     container_name: laravel-app
+    environment:
+      - GH_TOKEN=${GH_TOKEN}
     volumes:
       - .:/var/www
       - ./docker-claude:/home/laravel/.claude
