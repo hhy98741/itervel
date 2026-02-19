@@ -10,6 +10,8 @@ Route::get('/', function () {
     ]);
 })->name('home');
 
+Route::get('terms-of-service', fn () => Inertia::render('terms-of-service'))->name('terms.show');
+
 Route::get('dashboard', function () {
     return Inertia::render('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');

@@ -33,6 +33,7 @@ class UserFactory extends Factory
             'two_factor_recovery_codes' => null,
             'two_factor_confirmed_at' => null,
             'video_credits' => 0,
+            'terms_accepted_at' => now(),
         ];
     }
 
@@ -55,6 +56,16 @@ class UserFactory extends Factory
             'two_factor_secret' => encrypt('secret'),
             'two_factor_recovery_codes' => encrypt(json_encode(['recovery-code-1'])),
             'two_factor_confirmed_at' => now(),
+        ]);
+    }
+
+    /**
+     * Indicate that the model has not accepted the terms of service.
+     */
+    public function withoutTermsAcceptance(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'terms_accepted_at' => null,
         ]);
     }
 }

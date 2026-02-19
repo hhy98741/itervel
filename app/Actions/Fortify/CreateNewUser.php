@@ -30,6 +30,7 @@ class CreateNewUser implements CreatesNewUsers
             'email' => $input['email'],
             'password' => $input['password'],
             'video_credits' => 1,
+            'terms_accepted_at' => now(),
         ]);
     }
 }

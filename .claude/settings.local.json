@@ -1,0 +1,33 @@
+{
+    "permissions": {
+        "allow": [
+            "Bash(ls E*-F*.md)",
+            "Bash(php artisan tinker:*)",
+            "Bash(php artisan test:*)",
+            "mcp__laravel-boost__tinker",
+            "mcp__laravel-boost__database-schema",
+            "Bash(php -r:*)",
+            "Bash(git stash:*)",
+            "Bash(npm run types:*)",
+            "Bash(npm run lint:*)",
+            "Bash(npm run format:check:*)",
+            "Bash(vendor/bin/pint:*)",
+            "Bash(npx eslint:*)",
+            "Bash(php artisan route:list:*)",
+            "Bash(ls:*)",
+            "Bash(php artisan make:notification:*)",
+            "Bash(php artisan:*)",
+            "Bash(/tmp/test_fortify_callback.php:*)",
+            "Bash(php:*)",
+            "Bash(/tmp/test_direct.php:*)",
+            "Bash(/tmp/test_timing.php:*)",
+            "Bash(/tmp/test_route_sp.php:*)",
+            "Bash(/tmp/test_boot_order.php:*)",
+            "Bash(npm run build:*)",
+            "Bash(docker compose:*)"
+        ]
+    },
+    "enableAllProjectMcpServers": true,
+    "enabledMcpjsonServers": ["laravel-boost"],
+    "outputStyle": "default"
+}
