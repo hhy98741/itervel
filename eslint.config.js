@@ -50,9 +50,17 @@ export default [
                         'sibling',
                         'index',
                     ],
+                    pathGroups: [
+                        {
+                            pattern: '@/**',
+                            group: 'internal',
+                        },
+                    ],
+                    pathGroupsExcludedImportTypes: [],
                     alphabetize: {
                         order: 'asc',
                         caseInsensitive: true,
+                        orderImportKind: 'asc',
                     },
                 },
             ],
