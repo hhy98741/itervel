@@ -1,4 +1,6 @@
 docker-claude/
+tests/Browser/Screenshots/
+playwright-libs/
 
 # Created by https://www.toptal.com/developers/gitignore/api/macos,react,laravel,phpunit,composer,visualstudiocode
 # Edit at https://www.toptal.com/developers/gitignore?templates=macos,react,laravel,phpunit,composer,visualstudiocode
@@ -153,6 +155,7 @@ yarn-error.log
 /.vscode
 /.zed
 # End laravel new app
+
 
 # Begin laravel boost
 .mcp.json

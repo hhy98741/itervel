@@ -1,7 +1,7 @@
 <?php
 
 use App\Models\User;
-use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Auth;
 use Laravel\Fortify\Features;
 
 test('login screen can be rendered', function () {
@@ -70,10 +70,15 @@ test('users can logout', function () {
     $response->assertRedirect(route('home'));
 });
 
-test('users are rate limited', function () {
+test('users are rate limited after 5 failed attempts', function () {
     $user = User::factory()->create();
 
-    RateLimiter::increment(md5('login'.implode('|', [$user->email, '127.0.0.1'])), amount: 5);
+    for ($i = 0; $i < 5; $i++) {
+        $this->post(route('login.store'), [
+            'email' => $user->email,
+            'password' => 'wrong-password',
+        ]);
+    }
 
     $response = $this->post(route('login.store'), [
         'email' => $user->email,
@@ -81,4 +86,78 @@ test('users are rate limited', function () {
     ]);
 
     $response->assertTooManyRequests();
+});
+
+test('remember me creates persistent session', function () {
+    $user = User::factory()->create();
+
+    $response = $this->post(route('login.store'), [
+        'email' => $user->email,
+        'password' => 'password',
+        'remember' => 'on',
+    ]);
+
+    $this->assertAuthenticated();
+    $user->refresh();
+    expect($user->remember_token)->not->toBeNull();
+});
+
+test('login without remember me does not persist remember token change', function () {
+    $user = User::factory()->create(['remember_token' => null]);
+
+    $this->post(route('login.store'), [
+        'email' => $user->email,
+        'password' => 'password',
+    ]);
+
+    $this->assertAuthenticated();
+    $user->refresh();
+    expect($user->remember_token)->toBeNull();
+});
+
+test('session lifetime is configured to 24 hours', function () {
+    expect(config('session.lifetime'))->toBe(1440);
+});
+
+test('remember me duration is configured to 30 days', function () {
+    $guard = Auth::guard('web');
+    $reflection = new ReflectionProperty($guard, 'rememberDuration');
+    expect($reflection->getValue($guard))->toBe(43200);
+});
+
+test('authenticated users are redirected from login page', function () {
+    $user = User::factory()->create();
+
+    $response = $this->actingAs($user)->get(route('login'));
+
+    $response->assertRedirect(route('dashboard'));
+});
+
+test('login fails with nonexistent email', function () {
+    $this->post(route('login.store'), [
+        'email' => 'nonexistent@example.com',
+        'password' => 'password',
+    ]);
+
+    $this->assertGuest();
+});
+
+test('login requires email', function () {
+    $response = $this->post(route('login.store'), [
+        'password' => 'password',
+    ]);
+
+    $response->assertSessionHasErrors('email');
+    $this->assertGuest();
+});
+
+test('login requires password', function () {
+    $user = User::factory()->create();
+
+    $response = $this->post(route('login.store'), [
+        'email' => $user->email,
+    ]);
+
+    $response->assertSessionHasErrors('password');
+    $this->assertGuest();
 });
