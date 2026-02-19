@@ -22,7 +22,7 @@ test('user can request a password reset link', function () {
 
     $page = visit('/forgot-password');
 
-    $page->fill('#email', 'test@example.com')
+    $page->fill('[data-test="forgot-password-email"]', 'test@example.com')
         ->click('@forgot-password-submit')
         ->assertSee('We have emailed your password reset link');
 });

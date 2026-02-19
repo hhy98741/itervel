@@ -39,11 +39,11 @@ class FortifyServiceProvider extends ServiceProvider
         $guard->setRememberDuration(43200); // 30 days in minutes
 
         $this->app->booted(function () {
-            foreach (Route::getRoutes()->get('POST') as $route) {
-                if ($route->uri() === 'forgot-password') {
-                    $route->middleware('throttle:password-reset');
-                    break;
-                }
+            $routes = Route::getRoutes();
+            $routes->refreshNameLookups();
+            $route = $routes->getByName('password.email');
+            if ($route) {
+                $route->middleware('throttle:password-reset');
             }
         });
     }
