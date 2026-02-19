@@ -8,6 +8,7 @@ use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -36,6 +37,15 @@ class FortifyServiceProvider extends ServiceProvider
         /** @var \Illuminate\Auth\SessionGuard $guard */
         $guard = Auth::guard('web');
         $guard->setRememberDuration(43200); // 30 days in minutes
+
+        $this->app->booted(function () {
+            foreach (Route::getRoutes()->get('POST') as $route) {
+                if ($route->uri() === 'forgot-password') {
+                    $route->middleware('throttle:password-reset');
+                    break;
+                }
+            }
+        });
     }
 
     /**
@@ -95,6 +105,10 @@ class FortifyServiceProvider extends ServiceProvider
 
         RateLimiter::for('verification', function (Request $request) {
             return Limit::perHour(3)->by($request->user()?->id ?: $request->ip());
+        });
+
+        RateLimiter::for('password-reset', function (Request $request) {
+            return Limit::perHour(3)->by($request->input('email'));
         });
     }
 }

@@ -59,6 +59,6 @@ test('user can request a password reset link', function () {
     $page = visit('/forgot-password');
 
     $page->fill('#email', 'test@example.com')
-        ->click('@email-password-reset-link-button')
+        ->click('@forgot-password-submit')
         ->assertSee('We have emailed your password reset link');
 });

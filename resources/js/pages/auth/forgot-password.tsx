@@ -37,6 +37,7 @@ export default function ForgotPassword({ status }: { status?: string }) {
                                     autoComplete="off"
                                     autoFocus
                                     placeholder="email@example.com"
+                                    data-test="forgot-password-email"
                                 />
 
                                 <InputError message={errors.email} />
@@ -46,7 +47,7 @@ export default function ForgotPassword({ status }: { status?: string }) {
                                 <Button
                                     className="w-full"
                                     disabled={processing}
-                                    data-test="email-password-reset-link-button"
+                                    data-test="forgot-password-submit"
                                 >
                                     {processing && (
                                         <LoaderCircle className="h-4 w-4 animate-spin" />
