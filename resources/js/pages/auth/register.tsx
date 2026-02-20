@@ -9,6 +9,7 @@ import { Spinner } from '@/components/ui/spinner';
 import AuthLayout from '@/layouts/auth-layout';
 import { login } from '@/routes';
 import { store } from '@/routes/register';
+import { show as termsShow } from '@/routes/terms';
 
 export default function Register() {
     return (
@@ -97,12 +98,19 @@ export default function Register() {
                                         name="terms"
                                         required
                                         tabIndex={5}
+                                        data-test="terms-checkbox"
                                     />
                                     <Label htmlFor="terms">
                                         I agree to the{' '}
-                                        <TextLink href="#">
+                                        <a
+                                            href={termsShow.url()}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            data-test="tos-link"
+                                            className="text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-neutral-500"
+                                        >
                                             Terms of Service
-                                        </TextLink>
+                                        </a>
                                     </Label>
                                 </div>
                                 <InputError message={errors.terms} />
@@ -112,7 +120,7 @@ export default function Register() {
                                 type="submit"
                                 className="mt-2 w-full"
                                 tabIndex={6}
-                                data-test="register-user-button"
+                                data-test="register-submit"
                             >
                                 {processing && <Spinner />}
                                 Create account

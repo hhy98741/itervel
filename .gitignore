@@ -1,3 +1,4 @@
+.claude/settings.local.json
 docker-claude/
 tests/Browser/Screenshots/
 playwright-libs/

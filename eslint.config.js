@@ -88,6 +88,8 @@ export default [
             'tailwind.config.js',
             'vite.config.ts',
             'docker-claude',
+            'resources/js/actions',
+            'resources/js/routes',
         ],
     },
     prettier, // Turn off all rules that might conflict with Prettier

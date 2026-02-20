@@ -4,7 +4,7 @@ FROM php:8.4-fpm AS builder
 # Install system dependencies and PHP extensions required for Laravel + MySQL support
 # Some dependencies are required for PHP extensions only in the build stage
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl gh git unzip vim wget \
+    curl gh git openssh-server unzip vim wget \
     libpng-dev \
     libonig-dev \
     libssl-dev \
