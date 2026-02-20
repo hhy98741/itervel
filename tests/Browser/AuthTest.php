@@ -31,7 +31,7 @@ test('user can register an account', function () {
         ->fill('#password', 'Password123!')
         ->fill('#password_confirmation', 'Password123!')
         ->check('#terms')
-        ->click('@register-user-button')
+        ->click('@register-submit')
         ->assertPathIs('/email/verify');
 
     $this->assertAuthenticated();
