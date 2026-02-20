@@ -7,11 +7,13 @@ services:
     container_name: laravel-app
     environment:
       - GH_TOKEN=${GH_TOKEN}
+      - PULSE_SERVER=host.docker.internal
     volumes:
       - .:/var/www
       - ./docker-claude:/home/laravel/.claude
       - ${HOME}/.gitconfig:/home/laravel/.gitconfig:ro
       - ${HOME}/.ssh:/home/laravel/.ssh:ro
+      - ${HOME}/.config/pulse:/home/laravel/.config/pulse
     ports:
       - "8000:8000"   # Laravel
       - "5173:5173"   # Vite
