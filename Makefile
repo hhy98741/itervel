@@ -34,9 +34,10 @@ ai: ## Install/Update Laravel Boost
 setup: ## Initial setup
 	composer setup
 
-dependencies: ## Install compose and npm dependencies
+install: ## Install compose and npm dependencies
 	composer install
 	npm install
+	npx playwright install chromium
 
 dev: ## Start dev server
 	composer run dev
